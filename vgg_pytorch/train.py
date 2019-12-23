@@ -129,7 +129,7 @@ def train():
 
   for epoch in range(opt.epochs):
     # train for one epoch
-    print(f"\nBegin Training Epoch {epoch + 1}")
+    print(f"\nBegin Training Epoch {epoch}")
     # Sets the learning rate to the initial LR decayed by 0.97 every 2.4 epochs
     adjust_learning_rate(opt.lr, optimizer, epoch)
     # Calculate and return the top-k accuracy of the model
@@ -161,7 +161,7 @@ def train():
       # Call step of optimizer to update model params
       optimizer.step()
 
-      print(f"Epoch [{epoch + 1}] [{i + 1}/{len(train_dataloader)}]\t"
+      print(f"Epoch [{epoch}] [{i}/{len(train_dataloader)}]\t"
             f"Loss {loss.item():.4f}\t"
             f"Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t"
             f"Prec@5 {top5.val:.3f} ({top5.avg:.3f})", end="\r")
