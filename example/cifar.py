@@ -270,7 +270,7 @@ def train():
   for epoch in range(opt.epochs):
     adjust_learning_rate(opt.lr, optimizer, epoch)
     # train for one epoch
-    print(f"\nBegin Training Epoch {epoch + 1}")
+    print(f"\nBegin Training Epoch {epoch}")
     # Calculate and return the top-k accuracy of the model
     # so that we can track the learning process.
     losses = AverageMeter()
