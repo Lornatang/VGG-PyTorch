@@ -357,7 +357,7 @@ def test():
   )
 
   # TODO: Load ImageNet weight
-  if os.path.exists(MODEL_PATH):
+  if not os.path.exists(MODEL_PATH):
     print("Please train....")
     exit(0)
     
