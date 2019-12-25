@@ -26,10 +26,10 @@ import torch.utils.data.dataloader
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 
-from vgg_pytorch.model import vgg19_bn
-from vgg_pytorch.utils.eval import accuracy
-from vgg_pytorch.utils.misc import AverageMeter
-from vgg_pytorch.utils.adjust import adjust_learning_rate
+from model import vgg19_bn
+from utils.eval import accuracy
+from utils.misc import AverageMeter
+from utils.adjust import adjust_learning_rate
 
 parser = argparse.ArgumentParser(description='PyTorch AlexNet Classifier')
 parser.add_argument('--dataroot', type=str,

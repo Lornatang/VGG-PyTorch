@@ -78,7 +78,7 @@ cfgs = {
 }
 
 
-def _vgg(arch, cfg, batch_norm, progress, **kwargs):
+def _vgg(arch, cfg, batch_norm, **kwargs):
     model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
     return model
 
