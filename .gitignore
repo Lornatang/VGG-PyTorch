@@ -118,8 +118,8 @@ datasets
 examples/simple/data/train
 examples/simple/data/val
 
-examples/cifar/data/train
-examples/cifar/data/val
+examples/cifar/data/cifar-10-batches-py
+examples/cifar/data/cifar-100-python
 
 examples/imagenet/data/train
 examples/imagenet/data/val
