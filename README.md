@@ -51,27 +51,28 @@ pip install -e .
 Load an vgg11 network:
 ```python
 from vgg import VGGNet
-model = VGGNet.vgg11()
+model = VGGNet.from_name("vgg11")
 ```
 
 Load a pretrained vgg11: 
 ```python
 from vgg import VGGNet
-model = VGGNet.from_vgg11_pretrained()
+model = VGGNet.from_pretrained("vgg11")
 ```
 
 Details about the models are below (for CIFAR10 dataset): 
 
 |      *Name*       |*# Params*|*Top-1 Acc.*|*Pretrained?*|
 |:-----------------:|:--------:|:----------:|:-----------:|
-|     `vgg11`       |  132.9M  |    84.6    |      ✓      |
-|     `vgg13`       |    57M   |    79.1    |      ✓      |
-|     `vgg16`       |    57M   |    79.1    |      ✓      |
-|     `vgg19`       |    57M   |    79.1    |      ✓      |
-|     `vgg11_bn`    |   57.4M  |    47.4    |      ✓      |
-|     `vgg13_bn`    |   57.4M  |    47.4    |      ✓      |
-|     `vgg16_bn`    |   57.4M  |    47.4    |      ✓      |
-|     `vgg19_bn`    |   57.4M  |    47.4    |      ✓      |
+|     `vgg11`       |  128.8M  |    84.6    |      X      |
+|     `vgg13`       |    129M  |    86.4    |      X      |
+|     `vgg16`       |  134.3M  |    86.0    |      X      |
+|     `vgg19`       |  139.6M  |    87.8    |      X      |
+|-------------------|----------|------------|-------------|
+|     `vgg11_bn`    |  128.8M  |    85.1    |      X      |
+|     `vgg13_bn`    |    129M  |    87.3    |      X      |
+|     `vgg16_bn`    |  134.3M  |    89.0    |      X      |
+|     `vgg19_bn`    |  139.6M  |    88.7    |      X      |
 
 
 #### Example: Classification
@@ -85,7 +86,7 @@ import torch
 from torchvision import transforms
 
 from vgg import VGGNet
-model = VGGNet.from_pretrained()
+model = VGGNet.from_pretrained("vgg11")
 
 # Preprocess image
 tfms = transforms.Compose([transforms.Resize(224), transforms.ToTensor(),
