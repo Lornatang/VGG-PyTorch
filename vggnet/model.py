@@ -57,20 +57,20 @@ class VGGNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     @classmethod
-    def from_name(cls, model_name=None, num_classes=1000, init_weights=True):
+    def from_name(cls, model_name, num_classes=1000, init_weights=True):
       cls._check_model_name_is_valid(model_name)
-      arch, cfg, batch_norm = get_model_params(model_name)
-      model = _vgg(arch, cfg, batch_norm, num_classes, init_weights)
+      cfg, batch_norm = get_model_params(model_name)
+      model = _vgg(cfg, batch_norm, num_classes, init_weights)
       return model
 
     @classmethod
-    def from_pretrained(cls, model_name=None, init_weights=False):
+    def from_pretrained(cls, model_name, init_weights=False):
       model = cls.from_name(model_name, 1000, init_weights)
       load_pretrained_weights(model, model_name)
       return model
 
     @classmethod
-    def _check_model_name_is_valid(cls, model_name=None):
+    def _check_model_name_is_valid(cls, model_name):
       """ Validates model name. None that pretrained weights are only available for
       the first four models (vgg{i} for i in 11,13,16,19) at the moment. """
       valid_models = ['vgg'+str(i) for i in ["11", "11_bn", 
@@ -81,7 +81,7 @@ class VGGNet(nn.Module):
           raise ValueError('model_name should be one of: ' + ', '.join(valid_models))
     
     @classmethod
-    def load_weights(cls, model_name=None, model_path=None, num_classes=None, init_weights=True, **kwargs):
+    def load_weights(cls, model_name, model_path, num_classes, init_weights=True, **kwargs):
       model = cls.from_name(model_name, num_classes, init_weights)
       checkpoint = torch.load(model_path)
       model.load_state_dict(checkpoint['state_dict'])
@@ -112,6 +112,6 @@ cfgs = {
 }
 
 
-def _vgg(arch=None, cfg=None, batch_norm=None, num_classes=1000, init_weights=None, **kwargs):
+def _vgg(cfg, batch_norm, num_classes, init_weights, **kwargs):
     model = VGGNet(make_layers(cfgs[cfg], batch_norm=batch_norm), num_classes, init_weights, **kwargs)
     return model

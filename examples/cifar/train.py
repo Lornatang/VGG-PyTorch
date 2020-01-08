@@ -38,7 +38,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
 
-from vgg import VGGNet
+from vggnet import VGGNet
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
 parser.add_argument('data', metavar='DIR',
@@ -69,8 +69,6 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
-parser.add_argument('--pretrained', dest='pretrained', action='store_true',
-                    help='use pre-trained model')
 parser.add_argument('--world-size', default=-1, type=int,
                     help='number of nodes for distributed training')
 parser.add_argument('--rank', default=-1, type=int,
@@ -149,16 +147,12 @@ def main_worker(gpu, ngpus_per_node, args):
                                 world_size=args.world_size, rank=args.rank)
     # create model
     if 'vgg' in args.arch:  # NEW
-        if args.pretrained:
-            model = VGGNet.from_pretrained(args.arch, num_classes=args.num_classes)
-            print("=> using pre-trained model '{}'".format(args.arch))
-        else:
-            print("=> creating model '{}'".format(args.arch))
-            model = VGGNet.from_name(args.arch, num_classes=args.num_classes)
+        print("=> creating model '{}'".format(args.arch))
+        model = VGGNet.from_name(args.arch, num_classes=args.num_classes)
 
     else:
         warnings.warn("Please python train.py data --help")
-    print(model)
+
     if args.distributed:
         # For multiprocessing distributed, DistributedDataParallel constructor
         # should always set the single device scope, otherwise,

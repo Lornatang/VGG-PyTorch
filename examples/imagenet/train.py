@@ -1,4 +1,4 @@
-# Copyright 2019 Lorna Authors. All Rights Reserved.
+# Copyright 2020 Lorna Authors. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -13,7 +13,7 @@
 # ==============================================================================
 
 """
-Evaluate on ImageNet. Note that at the moment, training is not implemented (I am working on it).
+Evaluate on VGGNet. Note that at the moment, training is not implemented (I am working on it).
 that being said, evaluation is working.
 """
 
@@ -37,17 +37,18 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
+import torchsummary
 
-from alexnet import AlexNet
+from vggnet import VGGNet
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='alexnet',
-                    help='model architecture (default: alexnet)')
+parser.add_argument('-a', '--arch', metavar='ARCH', default='vgg11',
+                    help='model architecture (default: vgg11)')
 parser.add_argument('-j', '--workers', default=1, type=int, metavar='N',
                     help='number of data loading workers (default: 1)')
-parser.add_argument('--epochs', default=120, type=int, metavar='N',
+parser.add_argument('--epochs', default=90, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -56,7 +57,7 @@ parser.add_argument('-b', '--batch-size', default=256, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.001, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -146,12 +147,13 @@ def main_worker(gpu, ngpus_per_node, args):
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
     # create model
-    if 'alexnet' in args.arch:  # NEW
+    if 'vgg' in args.arch:  # NEW
         print("=> creating model '{}'".format(args.arch))
-        model = AlexNet(num_classes=args.num_classes)
-    else:
-      warnings.warn("Plesase --arch alexnet.")
+        model = VGGNet.from_name(args.arch, num_classes=args.num_classes)
 
+    else:
+        warnings.warn("Please python train.py data --help")
+    
     if args.distributed:
         # For multiprocessing distributed, DistributedDataParallel constructor
         # should always set the single device scope, otherwise,
@@ -175,16 +177,18 @@ def main_worker(gpu, ngpus_per_node, args):
         model = model.cuda(args.gpu)
     else:
         # DataParallel will divide and allocate batch_size to all available GPUs
-        if args.arch.startswith('alexnet'):
+        if args.arch.startswith('vgg'):
             model.features = torch.nn.DataParallel(model.features)
             model.cuda()
         else:
             model = torch.nn.DataParallel(model).cuda()
+    torchsummary.summary(model, (3, 224, 224))
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
 
-    optimizer = torch.optim.Adam(model.parameters(), args.lr,
+    optimizer = torch.optim.SGD(model.parameters(), args.lr,
+                                momentum=args.momentum,
                                 weight_decay=args.weight_decay)
 
     # optionally resume from a checkpoint
@@ -227,26 +231,27 @@ def main_worker(gpu, ngpus_per_node, args):
         train_sampler = None
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
-        num_workers=args.workers, pin_memory=True, sampler=train_sampler)
-
-    if 'alexnet' in args.arch:
+        train_dataset, batch_size=args.batch_size, shuffle=True,
+        num_workers=args.workers, pin_memory=True)
+    
+    if 'vgg' in args.arch:
+        image_size = 224
         val_transforms = transforms.Compose([
-            transforms.Resize(args.image_size, interpolation=PIL.Image.BICUBIC),
-            transforms.CenterCrop(args.image_size),
+            transforms.Resize(image_size, interpolation=PIL.Image.BICUBIC),
+            transforms.CenterCrop(image_size),
             transforms.ToTensor(),
             normalize,
         ])
-        print('Using image size', args.image_size)
+        print('Using image size', image_size)
     else:
         val_transforms = transforms.Compose([
             transforms.Resize(256),
-            transforms.CenterCrop(args.image_size),
+            transforms.CenterCrop(224),
             transforms.ToTensor(),
             normalize,
         ])
-        print('Using image size', args.image_size)
-        
+        print('Using image size', 224)
+
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(valdir, val_transforms),
         batch_size=args.batch_size, shuffle=False,

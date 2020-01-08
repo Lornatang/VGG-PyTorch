@@ -59,15 +59,15 @@ class AverageMeter(object):
 def vgg_params(model_name):
     """ Map vggNet model name to parameter vggnet. """
     params_dict = {
-      #              arch,      cfg, batch_norm
-      "vgg11":    ("vgg11",    "A", False),
-      "vgg13":    ("vgg13",    "B", False),
-      "vgg16":    ("vgg16",    "D", False),
-      "vgg19":    ("vgg19",    "E", False),
-      "vgg11_bn": ("vgg11_bn", "A", True),
-      "vgg13_bn": ("vgg13_bn", "B", True),
-      "vgg16_bn": ("vgg16_bn", "D", True),
-      "vgg19_bn": ("vgg19_bn", "E", True),
+      #                  cfg, batch_norm
+      "vgg11":    ("A", False),
+      "vgg13":    ("B", False),
+      "vgg16":    ("D", False),
+      "vgg19":    ("E", False),
+      "vgg11_bn": ("A", True),
+      "vgg13_bn": ("B", True),
+      "vgg16_bn": ("D", True),
+      "vgg19_bn": ("E", True),
     }
     return params_dict[model_name]
 
@@ -75,10 +75,10 @@ def vgg_params(model_name):
 def get_model_params(model_name):
   """ Get the block args and global params for a given model """
   if model_name.startswith("vgg"):
-      arch, cfg, batch_norm = vgg_params(model_name)
+      cfg, batch_norm = vgg_params(model_name)
   else:
       raise NotImplementedError("model name is not pre-defined: %s" % model_name)
-  return arch, cfg, batch_norm
+  return cfg, batch_norm
 
 
 urls_map = {
