@@ -23,16 +23,16 @@ import torch
 import torchvision.transforms as transforms
 
 from vggnet import VGGNet
- 
+
 image_size = 224
 
 # Open image
 img = Image.open('panda.jpg')
 
 # Preprocess image
-tfms = transforms.Compose([transforms.Resize(image_size), transforms.CenterCrop(image_size), 
+tfms = transforms.Compose([transforms.Resize(image_size), transforms.CenterCrop(image_size),
                            transforms.ToTensor(),
-                           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),])
+                           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]), ])
 img = tfms(img).unsqueeze(0)
 
 # Load class names
@@ -44,11 +44,11 @@ model = VGGNet.from_pretrained("vgg11")
 print('Loaded pretrained weights.')
 model.eval()
 with torch.no_grad():
-    logits = model(img)
+  logits = model(img)
 preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
 
 print('-----')
 for idx in preds:
-    label = labels_map[idx]
-    prob = torch.softmax(logits, dim=1)[0, idx].item()
-    print('{:<75} ({:.2f}%)'.format(label, prob*100))
+  label = labels_map[idx]
+  prob = torch.softmax(logits, dim=1)[0, idx].item()
+  print('{:<75} ({:.2f}%)'.format(label, prob * 100))

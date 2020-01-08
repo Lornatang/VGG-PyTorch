@@ -14,11 +14,12 @@
 
 from torch.utils import model_zoo
 
+
 def adjust_learning_rate(optimizer, epoch, args):
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = args.lr * (0.1 ** (epoch // 30))
-    for param_group in optimizer.param_groups:
-        param_group["lr"] = lr
+  """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+  lr = args.lr * (0.1 ** (epoch // 30))
+  for param_group in optimizer.param_groups:
+    param_group["lr"] = lr
 
 
 def accuracy(output, target, topk=(1,)):
@@ -57,27 +58,27 @@ class AverageMeter(object):
 
 
 def vgg_params(model_name):
-    """ Map vggNet model name to parameter vggnet. """
-    params_dict = {
-      #                  cfg, batch_norm
-      "vgg11":    ("A", False),
-      "vgg13":    ("B", False),
-      "vgg16":    ("D", False),
-      "vgg19":    ("E", False),
-      "vgg11_bn": ("A", True),
-      "vgg13_bn": ("B", True),
-      "vgg16_bn": ("D", True),
-      "vgg19_bn": ("E", True),
-    }
-    return params_dict[model_name]
+  """ Map vggNet model name to parameter vggnet. """
+  params_dict = {
+    #                  cfg, batch_norm
+    "vgg11": ("A", False),
+    "vgg13": ("B", False),
+    "vgg16": ("D", False),
+    "vgg19": ("E", False),
+    "vgg11_bn": ("A", True),
+    "vgg13_bn": ("B", True),
+    "vgg16_bn": ("D", True),
+    "vgg19_bn": ("E", True),
+  }
+  return params_dict[model_name]
 
 
 def get_model_params(model_name):
   """ Get the block args and global params for a given model """
   if model_name.startswith("vgg"):
-      cfg, batch_norm = vgg_params(model_name)
+    cfg, batch_norm = vgg_params(model_name)
   else:
-      raise NotImplementedError("model name is not pre-defined: %s" % model_name)
+    raise NotImplementedError("model name is not pre-defined: %s" % model_name)
   return cfg, batch_norm
 
 
@@ -94,14 +95,14 @@ urls_map = {
 
 
 def load_pretrained_weights(model, model_name):
-    """ Loads pretrained weights, and downloads if loading for the first time. """
-    state_dict = model_zoo.load_url(urls_map[model_name])
-    model.load_state_dict(state_dict)
-    print(f"Loaded pretrained weights for {model_name}.")
+  """ Loads pretrained weights, and downloads if loading for the first time. """
+  state_dict = model_zoo.load_url(urls_map[model_name])
+  model.load_state_dict(state_dict)
+  print(f"Loaded pretrained weights for {model_name}.")
 
 
 def get_parameter_number(model):
-    total_num = sum(p.numel() for p in model.parameters())
-    trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Total parameters: {total_num/1000000:.1f}M")
-    print(f"Trainable parameters: {trainable_num/1000000:.1f}M")
+  total_num = sum(p.numel() for p in model.parameters())
+  trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+  print(f"Total parameters: {total_num / 1000000:.1f}M")
+  print(f"Trainable parameters: {trainable_num / 1000000:.1f}M")
