@@ -1,4 +1,4 @@
-# Copyright 2019 Lorna Authors. All Rights Reserved.
+# Copyright 2020 Lorna Authors. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -14,11 +14,14 @@
 
 import torch
 import torch.nn as nn
+from .utils import get_model_params
+from .utils import load_pretrained_weights
 
-class VGG(nn.Module):
+
+class VGGNet(nn.Module):
 
     def __init__(self, features, num_classes=1000, init_weights=True):
-        super(VGG, self).__init__()
+        super(VGGNet, self).__init__()
         self.features = features
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
@@ -53,6 +56,37 @@ class VGG(nn.Module):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
 
+    @classmethod
+    def from_name(cls, model_name=None, num_classes=1000, init_weights=True):
+      cls._check_model_name_is_valid(model_name)
+      arch, cfg, batch_norm = get_model_params(model_name)
+      model = _vgg(arch, cfg, batch_norm, num_classes, init_weights)
+      return model
+
+    @classmethod
+    def from_pretrained(cls, model_name=None, init_weights=False):
+      model = cls.from_name(model_name, 1000, init_weights)
+      load_pretrained_weights(model, model_name)
+      return model
+
+    @classmethod
+    def _check_model_name_is_valid(cls, model_name=None):
+      """ Validates model name. None that pretrained weights are only available for
+      the first four models (vgg{i} for i in 11,13,16,19) at the moment. """
+      valid_models = ['vgg'+str(i) for i in ["11", "11_bn", 
+                                             "13", "13_bn", 
+                                             "16", "16_bn", 
+                                             "19", "19_bn"]]
+      if model_name not in valid_models:
+          raise ValueError('model_name should be one of: ' + ', '.join(valid_models))
+    
+    @classmethod
+    def load_weights(cls, model_name=None, model_path=None, num_classes=None, init_weights=True, **kwargs):
+      model = cls.from_name(model_name, num_classes, init_weights)
+      checkpoint = torch.load(model_path)
+      model.load_state_dict(checkpoint['state_dict'])
+      return model
+
 
 def make_layers(cfg, batch_norm=False):
     layers = []
@@ -71,27 +105,13 @@ def make_layers(cfg, batch_norm=False):
 
 
 cfgs = {
-    'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-    'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-    'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
-    'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
+    "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
+    "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
+    "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M"],
+    "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"],
 }
 
 
-def _vgg(arch, cfg, batch_norm, **kwargs):
-    model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
+def _vgg(arch=None, cfg=None, batch_norm=None, num_classes=1000, init_weights=None, **kwargs):
+    model = VGGNet(make_layers(cfgs[cfg], batch_norm=batch_norm), num_classes, init_weights, **kwargs)
     return model
-
-
-def vgg19():
-    r"""VGG 19-layer model (configuration "E")
-    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`_
-    """
-    return _vgg('vgg19', 'E', False)
-
-
-def vgg19_bn():
-    r"""VGG 19-layer model (configuration "E")
-    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`_
-    """
-    return _vgg('vgg19', 'E', True)

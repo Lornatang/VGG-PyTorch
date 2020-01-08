@@ -1,4 +1,4 @@
-# Copyright 2019 Lorna Authors. All Rights Reserved.
+# Copyright 2020 Lorna Authors. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -12,15 +12,4 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Dynamic adjustment of parameters tool implementation"""
-
-
-def adjust_learning_rate(initial_lr=None, optimizer=None, epoch=None, every_epoch=2.4, reduction_rate=0.97):
-  """Sets the learning rate to the initial LR decayed by 0.97 every 2.4 epochs"""
-  if epoch != 0:
-    lr = initial_lr * (reduction_rate ** (epoch // every_epoch))
-    for param_group in optimizer.param_groups:
-      param_group['lr'] = lr
-  else:
-     for param_group in optimizer.param_groups:
-      param_group['lr'] = initial_lr
+from .model import AlexNet

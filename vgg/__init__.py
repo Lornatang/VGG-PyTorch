@@ -1,4 +1,4 @@
-# Copyright 2019 Lorna Authors. All Rights Reserved.
+# Copyright 2020 Lorna Authors. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -12,20 +12,10 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ['accuracy']
-
-
-def accuracy(output, target, topk=(1,)):
-  """Computes the precision@k for the specified values of k"""
-  maxk = max(topk)
-  batch_size = target.size(0)
-
-  _, pred = output.topk(maxk, 1, True, True)
-  pred = pred.t()
-  correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-  res = []
-  for k in topk:
-    correct_k = correct[:k].view(-1).float().sum(0)
-    res.append(correct_k.mul_(100.0 / batch_size))
-  return res
+__version__ = "0.5.0"
+from .model import VGGNet
+from .utils import adjust_learning_rate
+from .utils import accuracy
+from .utils import AverageMeter
+from .utils import vgg_params
+from .utils import get_model_params
