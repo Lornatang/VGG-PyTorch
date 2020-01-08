@@ -19,3 +19,4 @@ from .utils import accuracy
 from .utils import AverageMeter
 from .utils import vgg_params
 from .utils import get_model_params
+from .utils import get_parameter_number

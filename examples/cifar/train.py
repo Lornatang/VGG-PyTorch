@@ -39,6 +39,7 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 
 from vggnet import VGGNet
+from vggnet.utils import get_parameter_number
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
 parser.add_argument('data', metavar='DIR',
@@ -181,6 +182,8 @@ def main_worker(gpu, ngpus_per_node, args):
             model.cuda()
         else:
             model = torch.nn.DataParallel(model).cuda()
+    
+    get_parameter_number(model)
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
