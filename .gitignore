@@ -136,3 +136,4 @@ examples/imagenet/data/val
 
 # API file
 static/
+examples/cifar/res.txt
