@@ -32,7 +32,7 @@ img = Image.open('car.jpg')
 # Preprocess image
 tfms = transforms.Compose([transforms.Resize(image_size), transforms.CenterCrop(image_size),
                            transforms.ToTensor(),
-                           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]), ])
+                           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 img = tfms(img).unsqueeze(0)
 
 # Load class names
