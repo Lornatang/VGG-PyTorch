@@ -15,12 +15,11 @@
 """Example
 In this simple example, we load an image, pre-process it, and classify it with a pretrained VGGNet.
 """
-
 import json
-from PIL import Image
 
 import torch
 import torchvision.transforms as transforms
+from PIL import Image
 
 from vggnet import VGGNet
 
@@ -44,11 +43,11 @@ model = VGGNet.from_pretrained("vgg11")
 print('Loaded pretrained weights.')
 model.eval()
 with torch.no_grad():
-  logits = model(img)
+    logits = model(img)
 preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
 
 print('-----')
 for idx in preds:
-  label = labels_map[idx]
-  prob = torch.softmax(logits, dim=1)[0, idx].item()
-  print('{:<75} ({:.2f}%)'.format(label, prob * 100))
+    label = labels_map[idx]
+    prob = torch.softmax(logits, dim=1)[0, idx].item()
+    print('{:<75} ({:.2f}%)'.format(label, prob * 100))
