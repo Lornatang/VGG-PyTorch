@@ -92,7 +92,7 @@ class Picture(QWidget):
         if args.echo:
             self.echo(str(text), prob)
 
-    def popup_window(self, text, prob):
+    def echo(self, text, prob):
         QMessageBox.information(
             self, "Message",
             f"Label :{str(text):<75}\nProbability: {prob:.6f}")
