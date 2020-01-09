@@ -46,8 +46,7 @@ class VGGNet(nn.Module):
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(
-                    m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm2d):
@@ -79,13 +78,10 @@ class VGGNet(nn.Module):
                                                  "16", "16_bn",
                                                  "19", "19_bn"]]
         if model_name not in valid_models:
-            raise ValueError(
-                'model_name should be one of: ' +
-                ', '.join(valid_models))
+            raise ValueError('model_name should be one of: ' + ', '.join(valid_models))
 
     @classmethod
-    def load_weights(cls, model_name, model_path,
-                     num_classes, init_weights=True):
+    def load_weights(cls, model_name, model_path, num_classes, init_weights=True):
         model = cls.from_name(model_name, num_classes, init_weights)
         checkpoint = torch.load(model_path)
         model.load_state_dict(checkpoint['state_dict'])
@@ -117,10 +113,5 @@ cfgs = {
 
 
 def _vgg(cfg, batch_norm, num_classes, init_weights):
-    model = VGGNet(
-        make_layers(
-            cfgs[cfg],
-            batch_norm=batch_norm),
-        num_classes,
-        init_weights)
+    model = VGGNet(make_layers(cfgs[cfg], batch_norm=batch_norm), num_classes, init_weights)
     return model
