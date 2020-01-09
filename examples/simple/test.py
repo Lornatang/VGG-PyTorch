@@ -15,12 +15,12 @@
 """Example
 In this simple example, we load an image, pre-process it, and classify it with a pretrained VGGNet.
 """
+
 import json
 
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-
 from vggnet import VGGNet
 
 image_size = 224
@@ -38,9 +38,10 @@ img = tfms(img).unsqueeze(0)
 labels_map = json.load(open('labels_map.txt'))
 labels_map = [labels_map[str(i)] for i in range(1000)]
 
-# Classify with EfficientNet
-model = VGGNet.from_pretrained("vgg11")
-print('Loaded pretrained weights.')
+# Classify with AlexNet
+print("=> loading checkpoint 'vggnet-b11'.")
+model = VGGNet.from_pretrained('vggnet-b11')
+print("=> loaded checkpoint 'vggnet-b11'.")
 model.eval()
 with torch.no_grad():
     logits = model(img)

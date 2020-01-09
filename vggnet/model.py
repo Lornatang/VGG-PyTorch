@@ -11,26 +11,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
 import torch
 import torch.nn as nn
+from torch.hub import load_state_dict_from_url
 
+from .utils import vggnet_params
 from .utils import get_model_params
 from .utils import load_pretrained_weights
 
 
 class VGGNet(nn.Module):
 
-    def __init__(self, features, num_classes=1000, init_weights=True):
+    def __init__(self, global_params=None):
+        """ An VGGNet model. Most easily loaded with the .from_name or .from_pretrained methods
+
+        Args:
+        global_params (namedtuple): A set of GlobalParams shared between blocks
+
+        Example:
+            model = VGGNet.from_pretrained('vgg-b11')
+        """
         super(VGGNet, self).__init__()
-        self.features = features
+        self._global_params = global_params
+
+        arch = self._global_params.cfg
+        batch_norm = self._global_params.batch_norm
+        dropout_rate = self._global_params.dropout_rate
+        num_classes = self._global_params.num_classes
+        init_weights = self._global_params.init_weights
+
+        self.features = make_layers(cfgs[str(arch)], bool(batch_norm))
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
             nn.Linear(512 * 7 * 7, 4096),
             nn.ReLU(True),
-            nn.Dropout(),
+            nn.Dropout(p=dropout_rate),
             nn.Linear(4096, 4096),
             nn.ReLU(True),
-            nn.Dropout(),
+            nn.Dropout(p=dropout_rate),
             nn.Linear(4096, num_classes),
         )
         if init_weights:
@@ -57,35 +76,33 @@ class VGGNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     @classmethod
-    def from_name(cls, model_name, num_classes=1000, init_weights=True):
+    def from_name(cls, model_name, override_params=None):
         cls._check_model_name_is_valid(model_name)
-        cfg, batch_norm = get_model_params(model_name)
-        model = _vgg(cfg, batch_norm, num_classes, init_weights)
+        global_params = get_model_params(model_name, override_params)
+        return cls(global_params)
+
+    @classmethod
+    def from_pretrained(cls, model_name, num_classes=1000):
+        model = cls.from_name(model_name, override_params={'num_classes': num_classes})
+        load_pretrained_weights(model, model_name, load_fc=(num_classes == 1000))
         return model
 
     @classmethod
-    def from_pretrained(cls, model_name, init_weights=False):
-        model = cls.from_name(model_name, 1000, init_weights)
-        load_pretrained_weights(model, model_name)
-        return model
+    def get_image_size(cls, model_name):
+        cls._check_model_name_is_valid(model_name)
+        _, res, _, _ = vggnet_params(model_name)
+        return res
 
     @classmethod
-    def _check_model_name_is_valid(cls, model_name):
+    def _check_model_name_is_valid(cls, model_name, also_need_pretrained_weights=False):
         """ Validates model name. None that pretrained weights are only available for
-        the first four models (vgg{i} for i in 11,13,16,19) at the moment. """
-        valid_models = ['vgg' + str(i) for i in ["11", "11_bn",
-                                                 "13", "13_bn",
-                                                 "16", "16_bn",
-                                                 "19", "19_bn"]]
+        the first four models (vggnet-b{i} for i in 11,13,16,19) at the moment. """
+        valid_models = ['vggnet-b' + str(i) for i in ["11", "11_bn",
+                                                   "13", "13_bn",
+                                                   "16", "16_bn",
+                                                   "19", "19_bn"]]
         if model_name not in valid_models:
             raise ValueError('model_name should be one of: ' + ', '.join(valid_models))
-
-    @classmethod
-    def load_weights(cls, model_name, model_path, num_classes, init_weights=True):
-        model = cls.from_name(model_name, num_classes, init_weights)
-        checkpoint = torch.load(model_path)
-        model.load_state_dict(checkpoint['state_dict'])
-        return model
 
 
 def make_layers(cfg, batch_norm=False):
@@ -110,8 +127,3 @@ cfgs = {
     "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M"],
     "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"],
 }
-
-
-def _vgg(cfg, batch_norm, num_classes, init_weights):
-    model = VGGNet(make_layers(cfgs[cfg], batch_norm=batch_norm), num_classes, init_weights)
-    return model
