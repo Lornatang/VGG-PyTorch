@@ -37,13 +37,16 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
 from vggnet import VGGNet
+from vggnet.utils import accuracy
+from vggnet.utils import adjust_learning_rate
+from vggnet.utils import AverageMeter
 from vggnet.utils import get_parameter_number
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
+parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='vgg',
-                    help='model architecture (default: vgg)')
+parser.add_argument('-a', '--arch', metavar='ARCH', default='vggnet-b11',
+                    help='model architecture (default: vggnet-b11)')
 parser.add_argument('-j', '--workers', default=1, type=int, metavar='N',
                     help='number of data loading workers (default: 1)')
 parser.add_argument('--epochs', default=90, type=int, metavar='N',
@@ -68,6 +71,8 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
+parser.add_argument('--pretrained', dest='pretrained', action='store_true',
+                    help='use pre-trained model')
 parser.add_argument('--world-size', default=-1, type=int,
                     help='number of nodes for distributed training')
 parser.add_argument('--rank', default=-1, type=int,
@@ -80,7 +85,7 @@ parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--gpu', default=0, type=int,
                     help='GPU id to use.')
-parser.add_argument('--image_size', default=224, type=int,
+parser.add_argument('--image_size', default=32, type=int,
                     help='image size')
 parser.add_argument('--num_classes', type=int, default=10,
                     help="number of dataset category.")
@@ -145,12 +150,15 @@ def main_worker(gpu, ngpus_per_node, args):
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
     # create model
-    if 'vgg' in args.arch:  # NEW
-        print("=> creating model '{}'".format(args.arch))
-        model = VGGNet.from_name(args.arch, num_classes=args.num_classes)
-
+    if 'vggnet' in args.arch:  # NEW
+        if args.pretrained:
+            model = VGGNet.from_pretrained(args.arch, num_classes=args.num_classes)
+            print("=> using pre-trained model '{}'".format(args.arch))
+        else:
+            print("=> creating model '{}'".format(args.arch))
+            model = VGGNet.from_name(args.arch, num_classes=args.num_classes)
     else:
-        warnings.warn("Please python train.py data --help")
+        warnings.warn("Plesase --arch vggnet-b11.")
 
     if args.distributed:
         # For multiprocessing distributed, DistributedDataParallel constructor
@@ -183,6 +191,7 @@ def main_worker(gpu, ngpus_per_node, args):
             model = torch.nn.DataParallel(model).cuda()
 
     get_parameter_number(model)
+    print(model)
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
@@ -203,7 +212,8 @@ def main_worker(gpu, ngpus_per_node, args):
                 best_acc1 = best_acc1.to(args.gpu)
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
-            print("=> loaded checkpoint '{}' (epoch {})"  .format(args.resume, checkpoint['epoch']))
+            print("=> loaded checkpoint '{}' (epoch {})"
+                  .format(args.resume, checkpoint['epoch']))
         else:
             print("=> no checkpoint found at '{}'".format(args.resume))
 
@@ -218,7 +228,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train=True,
         download=True,
         transform=transforms.Compose([
-            transforms.RandomResizedCrop(32),
+            transforms.RandomResizedCrop(args.image_size),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             normalize,
@@ -230,7 +240,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train_sampler = None
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
+       train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
         num_workers=args.workers, pin_memory=True, sampler=train_sampler)
 
     if 'vgg' in args.arch:
@@ -283,7 +293,7 @@ def main_worker(gpu, ngpus_per_node, args):
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
 
-        if not args.multiprocessing_distributed or (args.multiprocessing_distributed 
+        if not args.multiprocessing_distributed or (args.multiprocessing_distributed
                                                 and args.rank % ngpus_per_node == 0):
             save_checkpoint({
                 'epoch': epoch + 1,
@@ -300,8 +310,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     losses = AverageMeter('Loss', ':4.4f')
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
-    progress = ProgressMeter(len(train_loader), batch_time, data_time, losses,
-                             top1, top5, prefix="Epoch: [{}]".format(epoch))
+    progress = ProgressMeter(len(train_loader), batch_time, data_time, losses, top1,
+                             top5, prefix="Epoch: [{}]".format(epoch))
 
     # switch to train mode
     model.train()
@@ -322,8 +332,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         # measure accuracy and record loss
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
         losses.update(loss.item(), images.size(0))
-        top1.update(acc1[0], images.size(0))
-        top5.update(acc5[0], images.size(0))
+        top1.update(acc1.item(), images.size(0))
+        top5.update(acc5.item(), images.size(0))
 
         # compute gradient and do Adam step
         optimizer.zero_grad()
@@ -343,7 +353,8 @@ def validate(val_loader, model, criterion, args):
     losses = AverageMeter('Loss', ':4.4f')
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
-    progress = ProgressMeter(len(val_loader), batch_time, losses, top1, top5, prefix='Test: ')
+    progress = ProgressMeter(len(val_loader), batch_time, losses, top1, top5,
+                             prefix='Test: ')
 
     # switch to evaluate mode
     model.eval()
@@ -362,8 +373,8 @@ def validate(val_loader, model, criterion, args):
             # measure accuracy and record loss
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
             losses.update(loss.item(), images.size(0))
-            top1.update(acc1[0], images.size(0))
-            top5.update(acc5[0], images.size(0))
+            top1.update(acc1.item(), images.size(0))
+            top5.update(acc5.item(), images.size(0))
 
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -372,7 +383,8 @@ def validate(val_loader, model, criterion, args):
             if i % args.print_freq == 0:
                 progress.print(i)
 
-        print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'.format(top1=top1, top5=top5))
+        print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
+              .format(top1=top1, top5=top5))
 
     return top1.avg
 
@@ -424,30 +436,6 @@ class ProgressMeter(object):
         num_digits = len(str(num_batches // 1))
         fmt = '{:' + str(num_digits) + 'd}'
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
-
-
-def adjust_learning_rate(optimizer, epoch, args):
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = args.lr * (0.1 ** (epoch // 30))
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
-    with torch.no_grad():
-        maxk = max(topk)
-        batch_size = target.size(0)
-
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-        res = []
-        for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size))
-        return res
 
 
 if __name__ == '__main__':
