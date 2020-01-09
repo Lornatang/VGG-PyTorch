@@ -161,7 +161,6 @@ def load_custom_weights(model, model_name):
     """ Loads custom weights, and train if loading for the first time. """
     checkpoint = torch.load(model_name)
     model.load_state_dict(checkpoint['state_dict'])
-    print(f"Loaded custom weights for {model_name}.")
 
 
 def get_parameter_number(model):
