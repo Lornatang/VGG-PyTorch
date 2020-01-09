@@ -12,7 +12,7 @@
 # limitations under the License.
 # ==============================================================================
 
-__version__ = "0.5.0"
+__version__ = "0.7.0"
 
 from .model import VGGNet
 from .utils import adjust_learning_rate

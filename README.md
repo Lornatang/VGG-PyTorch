@@ -1,5 +1,13 @@
 # VGGNet-PyTorch
 
+### Update (January 9, 2020)
+
+This update adds a visual interface for testing, which is developed by pyqt5. At present, it has realized basic functions, and other functions will be gradually improved in the future.
+
+### Update (January 6, 2020)
+
+This update adds a modular neural network, making it more flexible in use. It can be deployed to many common dataset classification tasks. Of course, it can also be used in your products.
+
 ### Overview
 This repository contains an op-for-op PyTorch reimplementation of [VGGNet](https://arxiv.org/pdf/1409.1556.pdf).
 
