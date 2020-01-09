@@ -122,12 +122,7 @@ def main():
         args.world_size = ngpus_per_node * args.world_size
         # Use torch.multiprocessing.spawn to launch distributed processes: the
         # main_worker process function
-        mp.spawn(
-            main_worker,
-            nprocs=ngpus_per_node,
-            args=(
-                ngpus_per_node,
-                args))
+        mp.spawn(main_worker, nprocs=ngpus_per_node, args=(ngpus_per_node, args))
     else:
         # Simply call main_worker function
         main_worker(args.gpu, ngpus_per_node, args)
@@ -169,8 +164,7 @@ def main_worker(gpu, ngpus_per_node, args):
             # ourselves based on the total number of GPUs we have
             args.batch_size = int(args.batch_size / ngpus_per_node)
             args.workers = int(args.workers / ngpus_per_node)
-            model = torch.nn.parallel.DistributedDataParallel(
-                model, device_ids=[args.gpu])
+            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         else:
             model.cuda()
             # DistributedDataParallel will divide and allocate batch_size to all
@@ -209,8 +203,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 best_acc1 = best_acc1.to(args.gpu)
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
-            print("=> loaded checkpoint '{}' (epoch {})"
-                  .format(args.resume, checkpoint['epoch']))
+            print("=> loaded checkpoint '{}' (epoch {})"  .format(args.resume, checkpoint['epoch']))
         else:
             print("=> no checkpoint found at '{}'".format(args.resume))
 
@@ -232,14 +225,12 @@ def main_worker(gpu, ngpus_per_node, args):
         ]))
 
     if args.distributed:
-        train_sampler = torch.utils.data.distributed.DistributedSampler(
-            train_dataset)
+        train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
     else:
         train_sampler = None
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=(
-            train_sampler is None),
+        train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
         num_workers=args.workers, pin_memory=True, sampler=train_sampler)
 
     if 'vgg' in args.arch:
@@ -292,8 +283,8 @@ def main_worker(gpu, ngpus_per_node, args):
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
 
-        if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                                                    and args.rank % ngpus_per_node == 0):
+        if not args.multiprocessing_distributed or (args.multiprocessing_distributed 
+                                                and args.rank % ngpus_per_node == 0):
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': args.arch,
@@ -309,8 +300,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     losses = AverageMeter('Loss', ':4.4f')
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
-    progress = ProgressMeter(len(train_loader), batch_time, data_time, losses, top1,
-                             top5, prefix="Epoch: [{}]".format(epoch))
+    progress = ProgressMeter(len(train_loader), batch_time, data_time, losses,
+                             top1, top5, prefix="Epoch: [{}]".format(epoch))
 
     # switch to train mode
     model.train()
@@ -352,8 +343,7 @@ def validate(val_loader, model, criterion, args):
     losses = AverageMeter('Loss', ':4.4f')
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
-    progress = ProgressMeter(len(val_loader), batch_time, losses, top1, top5,
-                             prefix='Test: ')
+    progress = ProgressMeter(len(val_loader), batch_time, losses, top1, top5, prefix='Test: ')
 
     # switch to evaluate mode
     model.eval()
@@ -382,8 +372,7 @@ def validate(val_loader, model, criterion, args):
             if i % args.print_freq == 0:
                 progress.print(i)
 
-        print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
-              .format(top1=top1, top5=top5))
+        print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'.format(top1=top1, top5=top5))
 
     return top1.avg
 
