@@ -156,7 +156,7 @@ def main_worker(gpu, ngpus_per_node, args):
             print("=> using pre-trained model '{}'".format(args.arch))
         else:
             print("=> creating model '{}'".format(args.arch))
-            model = VGGNet.from_name(args.arch, num_classes=args.num_classes)
+            model = VGGNet.from_custom(args.arch, args.resume, num_classes=args.num_classes)
     else:
         warnings.warn("Plesase --arch vggnet-b11.")
 
@@ -191,7 +191,6 @@ def main_worker(gpu, ngpus_per_node, args):
             model = torch.nn.DataParallel(model).cuda()
 
     get_parameter_number(model)
-    print(model)
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
@@ -200,7 +199,7 @@ def main_worker(gpu, ngpus_per_node, args):
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
 
-   # optionally resume from a checkpoint
+    # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
             print(f"=> loading checkpoint '{args.resume}'")
