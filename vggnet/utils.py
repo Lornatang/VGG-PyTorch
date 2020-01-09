@@ -105,7 +105,6 @@ def load_pretrained_weights(model, model_name):
 
 def get_parameter_number(model):
     total_num = sum(p.numel() for p in model.parameters())
-    trainable_num = sum(p.numel()
-                        for p in model.parameters() if p.requires_grad)
+    trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Total parameters: {total_num / 1000000:.1f}M")
     print(f"Trainable parameters: {trainable_num / 1000000:.1f}M")
