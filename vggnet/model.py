@@ -14,12 +14,18 @@
 
 import torch
 import torch.nn as nn
-from torch.hub import load_state_dict_from_url
 
 from .utils import vggnet_params
 from .utils import get_model_params
-from .utils import load_custom_weights
 from .utils import load_pretrained_weights
+
+
+cfgs = {
+    "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
+    "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
+    "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M"],
+    "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"],
+}
 
 
 class VGGNet(nn.Module):
@@ -31,29 +37,23 @@ class VGGNet(nn.Module):
         global_params (namedtuple): A set of GlobalParams shared between blocks
 
         Example:
-            model = VGGNet.from_pretrained('vgg-b11')
+            model = VGGNet.from_pretrained('vggnet-b11')
         """
         super(VGGNet, self).__init__()
         self._global_params = global_params
 
-        arch = self._global_params.cfg
-        batch_norm = self._global_params.batch_norm
-        dropout_rate = self._global_params.dropout_rate
-        num_classes = self._global_params.num_classes
-        init_weights = self._global_params.init_weights
-
-        self.features = make_layers(cfgs[str(arch)], bool(batch_norm))
+        self.features = make_layers(cfgs[self._global_params.cfg], self._global_params.batch_norm)
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
             nn.Linear(512 * 7 * 7, 4096),
             nn.ReLU(True),
-            nn.Dropout(p=dropout_rate),
+            nn.Dropout(self._global_params.dropout_rate),
             nn.Linear(4096, 4096),
             nn.ReLU(True),
-            nn.Dropout(p=dropout_rate),
-            nn.Linear(4096, num_classes),
+            nn.Dropout(self._global_params.dropout_rate),
+            nn.Linear(4096, self._global_params.num_classes),
         )
-        if init_weights:
+        if self._global_params.init_weights:
             self._initialize_weights()
 
     def forward(self, x):
@@ -89,15 +89,9 @@ class VGGNet(nn.Module):
         return model
 
     @classmethod
-    def from_custom(cls, model_name, resume, num_classes):
-        model = cls.from_name(model_name, override_params={'num_classes': num_classes})
-        load_custom_weights(model, resume)
-        return model
-
-    @classmethod
     def get_image_size(cls, model_name):
         cls._check_model_name_is_valid(model_name)
-        _, res, _, _ = vggnet_params(model_name)
+        _, res, _ = vggnet_params(model_name)
         return res
 
     @classmethod
@@ -126,11 +120,3 @@ def make_layers(cfg, batch_norm):
                 layers += [conv2d, nn.ReLU(inplace=True)]
             in_channels = v
     return nn.Sequential(*layers)
-
-
-cfgs = {
-    "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M"],
-    "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"],
-}
