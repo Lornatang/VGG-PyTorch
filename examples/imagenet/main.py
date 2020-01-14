@@ -196,6 +196,8 @@ def main_worker(gpu, ngpus_per_node, args):
         else:
             model = torch.nn.DataParallel(model).cuda()
 
+    get_parameter_number(model, image_size=VGGNet.get_image_size(args.arch))
+
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
 
@@ -464,10 +466,8 @@ def accuracy(output, target, topk=(1,)):
 
 
 def get_parameter_number(model):
-    total_num = sum(p.numel() for p in model.parameters())
-    trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Total parameters: {total_num / 1000000:.1f}M")
-    print(f"Trainable parameters: {trainable_num / 1000000:.1f}M")
+    from torchstat import stat
+    stat(model, (channels, image_size, image_size))
 
 
 def print_state_dict(model):

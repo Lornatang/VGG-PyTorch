@@ -39,6 +39,7 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 
 from apex import amp
+from thop import profile
 from vggnet import VGGNet
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
@@ -57,7 +58,7 @@ parser.add_argument('-b', '--batch-size', default=256, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -196,6 +197,8 @@ def main_worker(gpu, ngpus_per_node, args):
             model.cuda()
         else:
             model = torch.nn.DataParallel(model).cuda()
+
+    get_parameter_number(model, image_size=VGGNet.get_image_size(args.arch))
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
@@ -452,6 +455,20 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
+
+def get_parameter_number(model, image_size, channels=3):
+    from torchstat import stat
+    stat(model, (channels, image_size, image_size))
+
+
+def print_state_dict(model):
+    print("----------------------------------------------------------")
+    print("|                    state dict pram                     |")
+    print("----------------------------------------------------------")
+    for param_tensor in model.state_dict():
+        print(param_tensor, '\t', model.state_dict()[param_tensor].size())
+    print("----------------------------------------------------------")
 
 
 if __name__ == '__main__':
