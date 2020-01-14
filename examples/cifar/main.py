@@ -39,7 +39,6 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 
 from apex import amp
-from thop import profile
 from vggnet import VGGNet
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
@@ -197,8 +196,6 @@ def main_worker(gpu, ngpus_per_node, args):
             model.cuda()
         else:
             model = torch.nn.DataParallel(model).cuda()
-
-    get_parameter_number(model, image_size=VGGNet.get_image_size(args.arch))
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
