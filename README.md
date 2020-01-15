@@ -1,4 +1,8 @@
-# VGGNet-PyTorch
+# VGGNet
+
+### Update (January 15, 2020)
+
+This update allows you to use NVIDIA's Apex tool for accelerated training. By default choice `hybrid training precision` + `dynamic loss amplified` version, if you need to learn more and details about `apex` tools, please visit https://github.com/NVIDIA/apex.
 
 ### Update (January 9, 2020)
 
