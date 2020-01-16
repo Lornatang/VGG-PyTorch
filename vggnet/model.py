@@ -97,11 +97,11 @@ class VGGNet(nn.Module):
     @classmethod
     def _check_model_name_is_valid(cls, model_name):
         """ Validates model name. None that pretrained weights are only available for
-        the first four models (vggnet-b{i} for i in 11,13,16,19) at the moment. """
-        valid_models = ['vggnet-b' + str(i) for i in ["11", "11_bn",
-                                                      "13", "13_bn",
-                                                      "16", "16_bn",
-                                                      "19", "19_bn"]]
+        the first four models (vgg{i} for i in 11,13,16,19) at the moment. """
+        valid_models = ['vgg' + str(i) for i in ["11", "11_bn",
+                                                 "13", "13_bn",
+                                                 "16", "16_bn",
+                                                 "19", "19_bn"]]
         if model_name not in valid_models:
             raise ValueError('model_name should be one of: ' + ', '.join(valid_models))
 
