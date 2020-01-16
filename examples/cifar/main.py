@@ -14,7 +14,7 @@
 
 """
 Evaluate on cifar. Note that at the moment, training is not implemented (I am working on it).
-that being said, evaluation is working.
+that being said, evaluation is working. 
 """
 
 import argparse
