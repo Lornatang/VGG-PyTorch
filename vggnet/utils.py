@@ -38,14 +38,14 @@ def vggnet_params(model_name):
     """ Map VGGNet model name to parameter coefficients. """
     params_dict = {
         # Coefficients: cfg, res, batch_norm
-        "vggnet-b11":    ("A", 224, False),
-        "vggnet-b13":    ("B", 224, False),
-        "vggnet-b16":    ("D", 224, False),
-        "vggnet-b19":    ("E", 224, False),
-        "vggnet-b11_bn": ("A", 224, True),
-        "vggnet-b13_bn": ("B", 224, True),
-        "vggnet-b16_bn": ("D", 224, True),
-        "vggnet-b19_bn": ("E", 224, True),
+        "vgg11":    ("A", 224, False),
+        "vgg13":    ("B", 224, False),
+        "vgg16":    ("D", 224, False),
+        "vgg19":    ("E", 224, False),
+        "vgg11_bn": ("A", 224, True),
+        "vgg13_bn": ("B", 224, True),
+        "vgg16_bn": ("D", 224, True),
+        "vgg19_bn": ("E", 224, True),
     }
     return params_dict[model_name]
 
@@ -67,7 +67,7 @@ def vggnet(arch=None, image_size=None, batch_norm=None, dropout_rate=0.2, num_cl
 
 def get_model_params(model_name, override_params):
     """ Get the block args and global params for a given model """
-    if model_name.startswith('vggnet'):
+    if model_name.startswith('vgg'):
         c, s, b = vggnet_params(model_name)
         # note: all models have drop connect rate = 0.2
         global_params = vggnet(arch=c, image_size=s, batch_norm=b)
@@ -80,14 +80,14 @@ def get_model_params(model_name, override_params):
 
 
 urls_map = {
-    "vggnet-b11": "https://download.pytorch.org/models/vgg11-bbd30ac9.pth",
-    "vggnet-b13": "https://download.pytorch.org/models/vgg13-c768596a.pth",
-    "vggnet-b16": "https://download.pytorch.org/models/vgg16-397923af.pth",
-    "vggnet-b19": "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth",
-    "vggnet-b11_bn": "https://download.pytorch.org/models/vgg11_bn-6002323d.pth",
-    "vggnet-b13_bn": "https://download.pytorch.org/models/vgg13_bn-abd245e5.pth",
-    "vggnet-b16_bn": "https://download.pytorch.org/models/vgg16_bn-6c64b313.pth",
-    "vggnet-b19_bn": "https://download.pytorch.org/models/vgg19_bn-c79401a0.pth",
+    "vgg11": "https://download.pytorch.org/models/vgg11-bbd30ac9.pth",
+    "vgg13": "https://download.pytorch.org/models/vgg13-c768596a.pth",
+    "vgg16": "https://download.pytorch.org/models/vgg16-397923af.pth",
+    "vgg19": "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth",
+    "vgg11_bn": "https://download.pytorch.org/models/vgg11_bn-6002323d.pth",
+    "vgg13_bn": "https://download.pytorch.org/models/vgg13_bn-abd245e5.pth",
+    "vgg16_bn": "https://download.pytorch.org/models/vgg16_bn-6c64b313.pth",
+    "vgg19_bn": "https://download.pytorch.org/models/vgg19_bn-c79401a0.pth",
 }
 
 
