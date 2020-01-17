@@ -13,8 +13,8 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'vggnet'
-DESCRIPTION = 'VGGNet implements of PyTorch.'
-URL = 'https://github.com/lornatang/VGGNet-PyTorch'
+DESCRIPTION = 'An VGGNet implements of PyTorch.'
+URL = 'https://github.com/lornatang/VGGNet'
 EMAIL = 'liuchangyu1111@gmail.com'
 AUTHOR = 'Changyu'
 REQUIRES_PYTHON = '>=3.5.0'
