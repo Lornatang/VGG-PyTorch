@@ -18,7 +18,7 @@ URL = 'https://github.com/lornatang/VGGNet'
 EMAIL = 'liuchangyu1111@gmail.com'
 AUTHOR = 'Changyu'
 REQUIRES_PYTHON = '>=3.5.0'
-VERSION = '0.7.0'
+VERSION = '0.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [

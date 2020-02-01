@@ -12,7 +12,6 @@
 # limitations under the License.
 # ==============================================================================
 
-__version__ = "0.7.0"
+__version__ = "0.1.0"
 
 from .model import VGGNet
-from .utils import load_pretrained_weights

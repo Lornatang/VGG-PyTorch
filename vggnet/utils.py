@@ -13,11 +13,9 @@
 # ==============================================================================
 
 import collections
-from functools import partial
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 
 
@@ -50,16 +48,15 @@ def vggnet_params(model_name):
     return params_dict[model_name]
 
 
-def vggnet(arch=None, image_size=None, batch_norm=None, dropout_rate=0.2, num_classes=1000, init_weights=False):
+def vggnet(cfg, image_size, batch_norm, dropout_rate=0.2, num_classes=1000):
     """ Creates a vggnet model. """
 
     global_params = GlobalParams(
-        cfg=arch,
+        cfg=cfg,
         image_size=image_size,
         batch_norm=batch_norm,
         dropout_rate=dropout_rate,
         num_classes=num_classes,
-        init_weights=init_weights
     )
 
     return global_params
@@ -70,7 +67,7 @@ def get_model_params(model_name, override_params):
     if model_name.startswith('vgg'):
         c, s, b = vggnet_params(model_name)
         # note: all models have drop connect rate = 0.2
-        global_params = vggnet(arch=c, image_size=s, batch_norm=b)
+        global_params = vggnet(cfg=c, image_size=s, batch_norm=b)
     else:
         raise NotImplementedError(f"model name is not pre-defined: {model_name}.")
     if override_params:
@@ -101,4 +98,3 @@ def load_pretrained_weights(model, model_name, load_fc=True):
         state_dict.pop('classifier.6.bias')
         model.load_state_dict(state_dict, strict=False)
     print(f"Loaded pretrained weights for {model_name}")
-

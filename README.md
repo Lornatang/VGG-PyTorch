@@ -93,33 +93,47 @@ We assume that in your current directory, there is a `img.jpg` file and a `label
 
 ```python
 import json
-from PIL import Image
-import torch
-from torchvision import transforms
+import urllib
 
-from vgg import VGGNet
-model = VGGNet.from_pretrained("vgg11")
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+
+from vggnet import VGGNet
+
+input_image = Image.open("img.jpg")
 
 # Preprocess image
-tfms = transforms.Compose([transforms.Resize(224), transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),])
-img = tfms(Image.open('img.jpg')).unsqueeze(0)
-print(img.shape) # torch.Size([1, 3, 224, 224])
+preprocess = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+input_tensor = preprocess(input_image)
+input_batch = input_tensor.unsqueeze(0)  # create a mini-batch as expected by the model
 
-# Load ImageNet class names
-labels_map = json.load(open('labels_map.txt'))
+labels_map = json.load(open("labels_map.txt"))
 labels_map = [labels_map[str(i)] for i in range(1000)]
 
-# Classify
+# Classify with VGGNet
+model = VGGNet.from_pretrained("vgg11")
 model.eval()
-with torch.no_grad():
-    outputs = model(img)
 
-# Print predictions
-print('-----')
-for idx in torch.topk(outputs, k=5).indices.squeeze(0).tolist():
-    prob = torch.softmax(outputs, dim=1)[0, idx].item()
-    print('{label:<75} ({p:.2f}%)'.format(label=labels_map[idx], p=prob*100))
+# move the input and model to GPU for speed if available
+if torch.cuda.is_available():
+    input_batch = input_batch.to("cuda")
+    model.to("cuda")
+
+with torch.no_grad():
+    logits = model(input_batch)
+preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
+
+print("-----")
+for idx in preds:
+    label = labels_map[idx]
+    prob = torch.softmax(logits, dim=1)[0, idx].item()
+    print(f"{label:<75} ({prob * 100:.2f}%)")
 ```
 
 #### ImageNet

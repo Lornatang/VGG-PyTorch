@@ -42,28 +42,23 @@ class VGGNet(nn.Module):
         super(VGGNet, self).__init__()
         self._global_params = global_params
 
-        self.features = make_layers(cfgs[self._global_params.cfg], self._global_params.batch_norm)
+        cfg = self._global_params.cfg
+        batch_norm = self._global_params.batch_norm
+        dropout_rate = self._global_params.dropout_rate
+        num_classes = self._global_params.num_classes
+
+        self.features = make_layers(cfgs[cfg], batch_norm)
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
             nn.Linear(512 * 7 * 7, 4096),
             nn.ReLU(True),
-            nn.Dropout(self._global_params.dropout_rate),
+            nn.Dropout(dropout_rate),
             nn.Linear(4096, 4096),
             nn.ReLU(True),
-            nn.Dropout(self._global_params.dropout_rate),
-            nn.Linear(4096, self._global_params.num_classes),
+            nn.Dropout(dropout_rate),
+            nn.Linear(4096, num_classes),
         )
-        if self._global_params.init_weights:
-            self._initialize_weights()
 
-    def forward(self, x):
-        x = self.features(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
-        return x
-
-    def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -75,6 +70,13 @@ class VGGNet(nn.Module):
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
+
+    def forward(self, x):
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
 
     @classmethod
     def from_name(cls, model_name, override_params=None):
