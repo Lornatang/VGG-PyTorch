@@ -1,4 +1,19 @@
-# VGGNet
+# VGGNet-PyTorch
+
+### Update (Feb 14, 2020)
+
+The update is for ease of use and deployment.
+
+ * [Example: Export to ONNX](#example-export-to-onnx)
+ * [Example: Extract features](#example-feature-extraction)
+ * [Example: Visual](#example-visual)
+
+It is also now incredibly simple to load a pretrained model with a new number of classes for transfer learning:
+
+```python
+from vgg_pytorch import VGG 
+model = VGG.from_pretrained('vgg11', num_classes=10)
+```
 
 ### Update (January 15, 2020)
 
@@ -26,14 +41,17 @@ _Upcoming features_: In the next few days, you will be able to:
  * Export VGGNet models for production
  
 ### Table of contents
-1. [About VGGNet](#about-vgg)
+1. [About VGG](#about-vgg)
 2. [Installation](#installation)
 3. [Usage](#usage)
     * [Load pretrained models](#loading-pretrained-models)
     * [Example: Classify](#example-classification)
+    * [Example: Extract features](#example-feature-extraction)
+    * [Example: Export to ONNX](#example-export-to-onnx)
+    * [Example: Visual](#example-visual)
 4. [Contributing](#contributing) 
 
-### About VGGNet
+### About VGG
 
 If you're new to VGGNets, here is an explanation straight from the official PyTorch implementation: 
 
@@ -51,9 +69,9 @@ have made our two best-performing ConvNet models publicly available to facilitat
 
 Install from source:
 ```bash
-git clone https://github.com/lornatang/VGGNet
-cd VGGNet
-python setup.py install
+git clone https://github.com/lornatang/VGGNet-PyTorch.git
+cd VGGNet-PyTorch
+pip install -e .
 ``` 
 
 ### Usage
@@ -104,54 +122,104 @@ Details about the models are below (for CIFAR10 dataset):
 
 We assume that in your current directory, there is a `img.jpg` file and a `labels_map.txt` file (ImageNet class names). These are both included in `examples/simple`. 
 
+All pre-trained models expect input images normalized in the same way,
+i.e. mini-batches of 3-channel RGB images of shape `(3 x H x W)`, where `H` and `W` are expected to be at least `224`.
+The images have to be loaded in to a range of `[0, 1]` and then normalized using `mean = [0.485, 0.456, 0.406]`
+and `std = [0.229, 0.224, 0.225]`.
+
+Here's a sample execution.
+
 ```python
 import json
-import urllib
 
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 
-from vgg_pytorch import VGG
+from vgg_pytorch import VGG 
 
+# Open image
 input_image = Image.open("img.jpg")
 
 # Preprocess image
 preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+  transforms.Resize(256),
+  transforms.CenterCrop(224),
+  transforms.ToTensor(),
+  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 input_tensor = preprocess(input_image)
 input_batch = input_tensor.unsqueeze(0)  # create a mini-batch as expected by the model
 
+# Load class names
 labels_map = json.load(open("labels_map.txt"))
 labels_map = [labels_map[str(i)] for i in range(1000)]
 
-# Classify with VGGNet
+# Classify with VGG11
 model = VGG.from_pretrained("vgg11")
 model.eval()
 
 # move the input and model to GPU for speed if available
 if torch.cuda.is_available():
-    input_batch = input_batch.to("cuda")
-    model.to("cuda")
+  input_batch = input_batch.to("cuda")
+  model.to("cuda")
 
 with torch.no_grad():
-    logits = model(input_batch)
+  logits = model(input_batch)
 preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
 
 print("-----")
 for idx in preds:
-    label = labels_map[idx]
-    prob = torch.softmax(logits, dim=1)[0, idx].item()
-    print(f"{label:<75} ({prob * 100:.2f}%)")
+  label = labels_map[idx]
+  prob = torch.softmax(logits, dim=1)[0, idx].item()
+  print(f"{label:<75} ({prob * 100:.2f}%)")
 ```
+
+#### Example: Feature Extraction 
+
+You can easily extract features with `model.extract_features`:
+```python
+import torch
+from vgg_pytorch import VGG 
+model = VGG.from_pretrained('vgg11')
+
+# ... image preprocessing as in the classification example ...
+inputs = torch.randn(1, 3, 224, 224)
+print(inputs.shape) # torch.Size([1, 3, 224, 224])
+
+features = model.extract_features(inputs)
+print(features.shape) # torch.Size([1, 256, 6, 6])
+```
+
+#### Example: Export to ONNX  
+
+Exporting to ONNX for deploying to production is now simple: 
+```python
+import torch 
+from vgg_pytorch import VGG 
+
+model = VGG.from_pretrained('vgg11')
+dummy_input = torch.randn(16, 3, 224, 224)
+
+torch.onnx.export(model, dummy_input, "demo.onnx", verbose=True)
+```
+
+#### Example: Visual
+
+```text
+cd $REPO$/framework
+python manage.py runserver
+```
+
+Then open the browser and type in the browser address [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+
+Enjoy it.
 
 #### ImageNet
 
 See `examples/imagenet` for details about evaluating on ImageNet.
+
+For more datasets result. Please see `research/README.md`.
 
 ### Contributing
 
