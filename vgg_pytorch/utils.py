@@ -21,7 +21,7 @@ import torch.utils.model_zoo as model_zoo
 # Parameters for the entire model (stem, all blocks, and head)
 GlobalParams = collections.namedtuple('GlobalParams', [
   'cfg', 'image_size', 'batch_norm',
-  'dropout_rate', 'num_classes', 'init_weights'
+  'dropout_rate', 'num_classes'
 ])
 
 # Change namedtuple defaults
