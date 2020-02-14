@@ -12,11 +12,11 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'vggnet'
+NAME = 'vgg_pytorch'
 DESCRIPTION = 'An VGGNet implements of PyTorch.'
 URL = 'https://github.com/lornatang/VGGNet'
 EMAIL = 'liuchangyu1111@gmail.com'
-AUTHOR = 'Changyu'
+AUTHOR = 'Liu Changyu'
 REQUIRES_PYTHON = '>=3.5.0'
 VERSION = '0.1.0'
 
