@@ -15,10 +15,9 @@
 import torch
 import torch.nn as nn
 
-from .utils import vggnet_params
 from .utils import get_model_params
 from .utils import load_pretrained_weights
-
+from .utils import vggnet_params
 
 cfgs = {
     "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
@@ -28,7 +27,7 @@ cfgs = {
 }
 
 
-class VGGNet(nn.Module):
+class VGG(nn.Module):
 
     def __init__(self, global_params=None):
         """ An VGGNet model. Most easily loaded with the .from_name or .from_pretrained methods
@@ -37,9 +36,9 @@ class VGGNet(nn.Module):
         global_params (namedtuple): A set of GlobalParams shared between blocks
 
         Example:
-            model = VGGNet.from_pretrained('vggnet-b11')
+            model = VGG.from_pretrained('vgg11')
         """
-        super(VGGNet, self).__init__()
+        super(VGG, self).__init__()
         self._global_params = global_params
 
         cfg = self._global_params.cfg
@@ -70,6 +69,11 @@ class VGGNet(nn.Module):
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
+
+    def extract_features(self, inputs):
+        """ Returns output of the final convolution layer """
+        x = self.features(inputs)
+        return x
 
     def forward(self, x):
         x = self.features(x)
