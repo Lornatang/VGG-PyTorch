@@ -39,7 +39,7 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 
 from apex import amp
-from vggnet import VGGNet
+from vgg_pytorch import VGGNet
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('data', metavar='DIR', default='data',

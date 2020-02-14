@@ -62,15 +62,28 @@ python setup.py install
 
 Load an vgg11 network:
 ```python
-from vgg import VGGNet
-model = VGGNet.from_name("vgg11")
+from vgg_pytorch import VGG
+model = VGG.from_name("vgg11")
 ```
 
 Load a pretrained vgg11: 
 ```python
-from vgg import VGGNet
-model = VGGNet.from_pretrained("vgg11")
+from vgg_pytorch import VGG
+model = VGG.from_pretrained("vgg11")
 ```
+
+Their 1-crop error rates on imagenet dataset with pretrained models are listed below.
+
+| Model structure | Top-1 error | Top-5 error |
+| --------------- | ----------- | ----------- |
+|  vgg11          | 30.98       | 11.37       |
+|  vgg11_bn       | 26.70       | 8.58        |
+|  vgg13          | 30.07       | 10.75       |
+|  vgg13_bn       | 28.45       | 9.63        |
+|  vgg16          | 28.41       | 9.62        |
+|  vgg16_bn       | 26.63       | 8.50        |
+|  vgg19          | 27.62       | 9.12        |
+|  vgg19_bn       | 25.76       | 8.15        |
 
 Details about the models are below (for CIFAR10 dataset): 
 
@@ -99,7 +112,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 
-from vggnet import VGGNet
+from vgg_pytorch import VGG
 
 input_image = Image.open("img.jpg")
 
@@ -117,7 +130,7 @@ labels_map = json.load(open("labels_map.txt"))
 labels_map = [labels_map[str(i)] for i in range(1000)]
 
 # Classify with VGGNet
-model = VGGNet.from_pretrained("vgg11")
+model = VGG.from_pretrained("vgg11")
 model.eval()
 
 # move the input and model to GPU for speed if available

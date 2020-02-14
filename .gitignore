@@ -113,13 +113,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# datasets
-examples/cifar/data/cifar-10-batches-py
-examples/cifar/data/cifar-100-python
-
-examples/imagenet/data/train
-examples/imagenet/data/test
-
 # IDE file
 .idea
 .vscode
@@ -127,8 +120,14 @@ examples/imagenet/data/test
 # Mac file
 .DS_Store
 
-# Model file
-*.pth
-
-# API file
-static/
+# custom
+datasets
+examples/cifar/data/train
+examples/cifar/data/
+examples/imagenet/data/train
+examples/imagenet/data/test
+examples/imagenet/data/val
+examples/imagenet/data/labels_map.txt
+research/data
+framework/static
+将删除 examples/imagenet/res.txt

@@ -13,42 +13,49 @@
 # ==============================================================================
 
 """Example
-In this simple example, we load an image, pre-process it, and classify it with a pretrained VGGNet.
+In this simple example, we load an image, pre-process it, and classify it with
+a pretrained VGGNet.
 """
-
 import json
 
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from vggnet import VGGNet
 
-image_size = 224
+from vgg_pytorch import VGG
 
 # Open image
-img = Image.open('panda.jpg')
+input_image = Image.open("img.jpg")
 
 # Preprocess image
-tfms = transforms.Compose([transforms.Resize(image_size), transforms.CenterCrop(image_size),
-                           transforms.ToTensor(),
-                           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]), ])
-img = tfms(img).unsqueeze(0)
+preprocess = transforms.Compose([
+  transforms.Resize(256),
+  transforms.CenterCrop(224),
+  transforms.ToTensor(),
+  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+input_tensor = preprocess(input_image)
+input_batch = input_tensor.unsqueeze(0)  # create a mini-batch as expected by the model
 
 # Load class names
-labels_map = json.load(open('labels_map.txt'))
+labels_map = json.load(open("labels_map.txt"))
 labels_map = [labels_map[str(i)] for i in range(1000)]
 
-# Classify with AlexNet
-print("=> loading checkpoint 'vggnet-b11'.")
-model = VGGNet.from_pretrained('vggnet-b11')
-print("=> loaded checkpoint 'vggnet-b11'.")
+# Classify with VGG11
+model = VGG.from_pretrained("vgg11")
 model.eval()
+
+# move the input and model to GPU for speed if available
+if torch.cuda.is_available():
+  input_batch = input_batch.to("cuda")
+  model.to("cuda")
+
 with torch.no_grad():
-    logits = model(img)
+  logits = model(input_batch)
 preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
 
-print('-----')
+print("-----")
 for idx in preds:
-    label = labels_map[idx]
-    prob = torch.softmax(logits, dim=1)[0, idx].item()
-    print('{:<75} ({:.2f}%)'.format(label, prob * 100))
+  label = labels_map[idx]
+  prob = torch.softmax(logits, dim=1)[0, idx].item()
+  print(f"{label:<75} ({prob * 100:.2f}%)")
