@@ -101,7 +101,6 @@ best_acc1 = 0
 
 
 def main():
-
   if args.seed is not None:
     random.seed(args.seed)
     torch.manual_seed(args.seed)
