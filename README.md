@@ -188,7 +188,7 @@ inputs = torch.randn(1, 3, 224, 224)
 print(inputs.shape) # torch.Size([1, 3, 224, 224])
 
 features = model.extract_features(inputs)
-print(features.shape) # torch.Size([1, 256, 6, 6])
+print(features.shape) # torch.Size([1, 512, 7, 7])
 ```
 
 #### Example: Export to ONNX  
