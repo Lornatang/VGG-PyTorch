@@ -11,11 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 import collections
 import ssl
 
-import torch
 import torch.utils.model_zoo as model_zoo
 
 # Parameters for the entire model (stem, all blocks, and head)
@@ -33,14 +31,14 @@ GlobalParams.__new__.__defaults__ = (None,) * len(GlobalParams._fields)
 ########################################################################
 
 
-def vggnet_params(model_name):
+def vgg_params(model_name):
   """ Map VGGNet model name to parameter coefficients. """
   params_dict = {
     # Coefficients: cfg, res, batch_norm
-    "vgg11":    ("A", 224, False),
-    "vgg13":    ("B", 224, False),
-    "vgg16":    ("D", 224, False),
-    "vgg19":    ("E", 224, False),
+    "vgg11": ("A", 224, False),
+    "vgg13": ("B", 224, False),
+    "vgg16": ("D", 224, False),
+    "vgg19": ("E", 224, False),
     "vgg11_bn": ("A", 224, True),
     "vgg13_bn": ("B", 224, True),
     "vgg16_bn": ("D", 224, True),
@@ -66,7 +64,7 @@ def vggnet(cfg, image_size, batch_norm, dropout_rate=0.2, num_classes=1000):
 def get_model_params(model_name, override_params):
   """ Get the block args and global params for a given model """
   if model_name.startswith('vgg'):
-    c, s, b = vggnet_params(model_name)
+    c, s, b = vgg_params(model_name)
     # note: all models have drop connect rate = 0.2
     global_params = vggnet(cfg=c, image_size=s, batch_norm=b)
   else:

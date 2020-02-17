@@ -14,11 +14,11 @@ from setuptools import find_packages, setup, Command
 # Package meta-data.
 NAME = 'vgg_pytorch'
 DESCRIPTION = 'An VGGNet implements of PyTorch.'
-URL = 'https://github.com/lornatang/VGGNet'
+URL = 'https://github.com/lornatang/VGGNet-PyTorch'
 EMAIL = 'liuchangyu1111@gmail.com'
 AUTHOR = 'Liu Changyu'
 REQUIRES_PYTHON = '>=3.5.0'
-VERSION = '0.1.0'
+VERSION = '0.1.2'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
