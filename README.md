@@ -95,7 +95,7 @@ Their 1-crop error rates on imagenet dataset with pretrained models are listed b
 | Model structure | Top-1 error | Top-5 error |
 | --------------- | ----------- | ----------- |
 |  vgg11          | 30.98       | 11.37       |
-|  vgg11_bn       | 26.70       | 8.58        |
+|  vgg11_bn       | 29.70       | 10.19        |
 |  vgg13          | 30.07       | 10.75       |
 |  vgg13_bn       | 28.45       | 9.63        |
 |  vgg16          | 28.41       | 9.62        |
