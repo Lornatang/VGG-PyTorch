@@ -67,9 +67,14 @@ have made our two best-performing ConvNet models publicly available to facilitat
 
 ### Installation
 
+Install from pypi:
+```bash
+pip install vgg_pytorch
+```
+
 Install from source:
 ```bash
-git clone https://github.com/lornatang/VGGNet-PyTorch.git
+git clone https://github.com/Lornatang/VGGNet-PyTorch.git
 cd VGGNet-PyTorch
 pip install -e .
 ``` 
