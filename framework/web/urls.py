@@ -11,15 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
-"""
-====================================WARNING====================================
-Do not delete this file unless you know how to refactor it!
-====================================WARNING====================================
-"""
-
-from api.visual_imagenet import IMAGENET
-from api.visual_imagenet import index
+from api import IMAGENET
+from api import index
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -27,7 +20,7 @@ from django.urls import path
 
 # noinspection PyInterpreter
 urlpatterns = [
-  url(r'^api/imagenet.html', IMAGENET.as_view(), name="VGG19 classifier IMAGENET"),
+  url(r'^api/imagenet.html', IMAGENET.as_view(), name="VGG classifier IMAGENET"),
   path('', index),
   path('admin/', admin.site.urls),
   url('index/', index, name="index"),
