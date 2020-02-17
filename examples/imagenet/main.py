@@ -75,6 +75,8 @@ parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
+parser.add_argument('--opt_level', default="O1", type=str,
+                    help="Choose which accuracy to train. (default: 'O1')")
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
 parser.add_argument('--pretrained', dest='pretrained', action='store_true',
@@ -153,11 +155,7 @@ def main_worker(gpu, ngpus_per_node, args):
   # create model
   if 'vgg' in args.arch:
     if args.pretrained:
-<<<<<<< HEAD
       model = VGG.from_pretrained(args.arch)
-=======
-      model = VGG.from_pretrained(args.arch, args.num_classes)
->>>>>>> master
       print(f"=> using pre-trained model '{args.arch}'")
     else:
       print(f"=> creating model '{args.arch}'")
@@ -314,10 +312,9 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
   losses = AverageMeter('Loss', ':.4e')
   top1 = AverageMeter('Acc@1', ':6.2f')
   top5 = AverageMeter('Acc@5', ':6.2f')
-  progress = ProgressMeter(
-    len(train_loader),
-    [batch_time, data_time, losses, top1, top5],
-    prefix="Epoch: [{}]".format(epoch))
+  progress = ProgressMeter(len(train_loader),
+                           batch_time, data_time, losses, top1, top5,
+                           prefix="Epoch: [{}]".format(epoch))
 
   # switch to train mode
   model.train()
@@ -360,10 +357,9 @@ def validate(val_loader, model, criterion, args):
   losses = AverageMeter('Loss', ':.4e')
   top1 = AverageMeter('Acc@1', ':6.2f')
   top5 = AverageMeter('Acc@5', ':6.2f')
-  progress = ProgressMeter(
-    len(val_loader),
-    [batch_time, losses, top1, top5],
-    prefix='Test: ')
+  progress = ProgressMeter(len(val_loader),
+                           batch_time, losses, top1, top5,
+                           prefix='Test: ')
 
   # switch to evaluate mode
   model.eval()

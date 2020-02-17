@@ -127,5 +127,6 @@ examples/imagenet/data/train
 examples/imagenet/data/test
 examples/imagenet/data/val
 examples/imagenet/data/labels_map.txt
+examples/imagenet/res.txt
 research/data
 framework/static/imagenet
