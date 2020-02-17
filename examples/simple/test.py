@@ -12,9 +12,9 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Example
-In this simple example, we load an image, pre-process it, and classify it with
-a pretrained VGGNet.
+"""
+In this simple example, we load an image, pre-process it, and classify it
+with a pretrained VGG19.
 """
 import json
 
@@ -41,8 +41,8 @@ input_batch = input_tensor.unsqueeze(0)  # create a mini-batch as expected by th
 labels_map = json.load(open("labels_map.txt"))
 labels_map = [labels_map[str(i)] for i in range(1000)]
 
-# Classify with VGG11
-model = VGG.from_pretrained("vgg11")
+# Classify with VGG19
+model = VGG.from_pretrained("vgg19")
 model.eval()
 
 # move the input and model to GPU for speed if available
