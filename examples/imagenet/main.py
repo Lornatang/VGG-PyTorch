@@ -153,7 +153,11 @@ def main_worker(gpu, ngpus_per_node, args):
   # create model
   if 'vgg' in args.arch:
     if args.pretrained:
+<<<<<<< HEAD
       model = VGG.from_pretrained(args.arch)
+=======
+      model = VGG.from_pretrained(args.arch, args.num_classes)
+>>>>>>> master
       print(f"=> using pre-trained model '{args.arch}'")
     else:
       print(f"=> creating model '{args.arch}'")
