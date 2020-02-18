@@ -39,7 +39,7 @@ At the moment, you can easily:
 _Upcoming features_: In the next few days, you will be able to:
  * Quickly finetune an VGGNet on your own dataset
  * Export VGGNet models for production
- 
+
 ### Table of contents
 1. [About VGG](#about-vgg)
 2. [Installation](#installation)
@@ -77,7 +77,7 @@ Install from source:
 git clone https://github.com/Lornatang/VGGNet-PyTorch.git
 cd VGGNet-PyTorch
 pip install -e .
-``` 
+```
 
 ### Usage
 
@@ -213,7 +213,7 @@ torch.onnx.export(model, dummy_input, "demo.onnx", verbose=True)
 
 ```text
 cd $REPO$/framework
-python manage.py runserver
+sh start.sh
 ```
 
 Then open the browser and type in the browser address [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
