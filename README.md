@@ -69,14 +69,14 @@ have made our two best-performing ConvNet models publicly available to facilitat
 
 Install from pypi:
 ```bash
-pip install vgg_pytorch
+$ pip3 install vgg_pytorch
 ```
 
 Install from source:
 ```bash
-git clone https://github.com/Lornatang/VGGNet-PyTorch.git
-cd VGGNet-PyTorch
-pip install -e .
+$ git clone https://github.com/Lornatang/VGGNet-PyTorch.git
+$ cd VGGNet-PyTorch
+$ pip3 install -e .
 ```
 
 ### Usage
@@ -148,10 +148,10 @@ input_image = Image.open("img.jpg")
 
 # Preprocess image
 preprocess = transforms.Compose([
-  transforms.Resize(256),
-  transforms.CenterCrop(224),
-  transforms.ToTensor(),
-  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 input_tensor = preprocess(input_image)
 input_batch = input_tensor.unsqueeze(0)  # create a mini-batch as expected by the model
@@ -166,18 +166,18 @@ model.eval()
 
 # move the input and model to GPU for speed if available
 if torch.cuda.is_available():
-  input_batch = input_batch.to("cuda")
-  model.to("cuda")
+    input_batch = input_batch.to("cuda")
+    model.to("cuda")
 
 with torch.no_grad():
-  logits = model(input_batch)
+    logits = model(input_batch)
 preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
 
 print("-----")
 for idx in preds:
-  label = labels_map[idx]
-  prob = torch.softmax(logits, dim=1)[0, idx].item()
-  print(f"{label:<75} ({prob * 100:.2f}%)")
+    label = labels_map[idx]
+    prob = torch.softmax(logits, dim=1)[0, idx].item()
+    print(f"{label:<75} ({prob * 100:.2f}%)")
 ```
 
 #### Example: Feature Extraction 
@@ -231,3 +231,32 @@ For more datasets result. Please see `research/README.md`.
 If you find a bug, create a GitHub issue, or even better, submit a pull request. Similarly, if you have questions, simply post them as GitHub issues.   
 
 I look forward to seeing what the community does with these models! 
+
+### Credit
+
+#### Very Deep Convolutional Networks for Large-Scale Image Recognition
+
+*Karen Simonyan, Andrew Zisserman*
+
+##### Abstract
+
+In this work we investigate the effect of the convolutional network depth on its accuracy in the 
+large-scale image recognition setting. Our main contribution is a thorough evaluation of networks 
+of increasing depth using an architecture with very small (3x3) convolution filters, which shows 
+that a significant improvement on the prior-art configurations can be achieved by pushing the depth 
+to 16-19 weight layers. These findings were the basis of our ImageNet Challenge 2014 submission, 
+where our team secured the first and the second places in the localisation and classification tracks 
+respectively. We also show that our representations generalise well to other datasets, where they 
+achieve state-of-the-art results. We have made our two best-performing ConvNet models publicly 
+available to facilitate further research on the use of deep visual representations in computer vision.
+
+[paper](https://arxiv.org/abs/1409.1556)
+
+```text
+@article{VGG,
+title:{Very Deep Convolutional Networks for Large-Scale Image Recognition},
+author:{Karen Simonyan, Andrew Zisserman},
+journal={iclr},
+year={2015}
+}
+```
