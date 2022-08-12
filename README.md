@@ -3,14 +3,14 @@
 <a href="https://console.tiyaro.ai/explore/trn:model:123456789012-venkat:1.0:alexnet_pytorch_6c50c5">
 <img src="https://tiyaro-public-docs.s3.us-west-2.amazonaws.com/assets/tiyaro_badge.svg"></a>
 
-
 ## Overview
 
-This repository contains an op-for-op PyTorch reimplementation of [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/pdf/1409.1556v6.pdf).
+This repository contains an op-for-op PyTorch reimplementation
+of [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/pdf/1409.1556v6.pdf).
 
 ## Table of contents
 
-- [AlexNet-PyTorch](#alexnet-pytorch)
+- [VGG-PyTorch](#vgg-pytorch)
     - [Overview](#overview)
     - [Table of contents](#table-of-contents)
     - [Download weights](#download-weights)
@@ -22,7 +22,7 @@ This repository contains an op-for-op PyTorch reimplementation of [Very Deep Con
     - [Result](#result)
     - [Contributing](#contributing)
     - [Credit](#credit)
-        - [ImageNet Classification with Deep Convolutional Neural Networks](#imagenet-classification-with-deep-convolutional-neural-networks)
+        - [Very Deep Convolutional Networks for Large-Scale Image Recognition](#very-deep-convolutional-networks-for-large-scale-image-recognition)
 
 ## Download weights
 
@@ -40,13 +40,14 @@ Please refer to `README.md` in the `data` directory for the method of making a d
 
 ## How Test and Train
 
-Both training and testing only need to modify the `config.py` file. 
+Both training and testing only need to modify the `config.py` file.
 
 ### Test
 
-- line 29: `model_num_classes` change to `1000`.
-- line 31: `mode` change to `test`.
-- line 79: `model_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
+- line 29: `model_arch_name` change to `vgg11`.
+- line 31: `model_num_classes` change to `1000`.
+- line 33: `mode` change to `test`.
+- line 81: `model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
 
 ```bash
 python3 test.py
@@ -54,10 +55,10 @@ python3 test.py
 
 ### Train model
 
-- line 29: `model_num_classes` change to `1000`.
-- line 31: `mode` change to `train`.
-- line 33: `exp_name` change to `VGG11-ImageNet_1K`.
-- line 45: `pretrained_model_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
+- line 29: `model_arch_name` change to `vgg11`.
+- line 31: `model_num_classes` change to `1000`.
+- line 33: `mode` change to `train`.
+- line 47: `pretrained_model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
 
 ```bash
 python3 train.py
@@ -65,10 +66,10 @@ python3 train.py
 
 ### Resume train model
 
-- line 29: `model_num_classes` change to `1000`.
-- line 31: `mode` change to `train`.
-- line 33: `exp_name` change to `VGG11-ImageNet_1K`.
-- line 48: `resume` change to `./samples/VGG11-ImageNet_1K/epoch_xxx.pth.tar`.
+- line 29: `model_arch_name` change to `vgg11`.
+- line 31: `model_num_classes` change to `1000`.
+- line 33: `mode` change to `train`.
+- line 50: `resume` change to `./samples/VGG11-ImageNet_1K/epoch_xxx.pth.tar`.
 
 ```bash
 python3 train.py
@@ -80,64 +81,73 @@ Source of original paper results: [https://arxiv.org/pdf/1409.1556v6.pdf](https:
 
 In the following table, the top-x error value in `()` indicates the result of the project, and `-` indicates no test.
 
-|  Model  |   Dataset   | Top-1 error (val) | Top-5 error (val) |
-|:-------:|:-----------:|:-----------------:|:-----------------:|
-| AlexNet | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+|  Model   |   Dataset   | Top-1 error (val) | Top-5 error (val) |
+|:--------:|:-----------:|:-----------------:|:-----------------:|
+|  VGG11   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+| VGG11_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+|  VGG13   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+| VGG13_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+|  VGG16   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+| VGG16_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+|  VGG19   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+| VGG19_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
 
 ```bash
-# Download `AlexNet-ImageNet_1K-9df8cd0f.pth.tar` weights to `./results/pretrained_models`
+# Download `VGG11-ImageNet_1K-9df8cd0f.pth.tar` weights to `./results/pretrained_models`
 # More detail see `README.md<Download weights>`
 python3 ./inference.py 
 ```
 
-Input: 
+Input:
 
 <span align="center"><img width="224" height="224" src="figure/n01440764_36.JPEG"/></span>
 
-Output: 
+Output:
 
 ```text
-Build AlexNet model successfully.
-Load AlexNet model weights `/home/dl/Code/AlexNet-PyTorch/results/pretrained_models/AlexNet-ImageNet_1K-9df8cd0f.pth.tar` successfully.
-tench, Tinca tinca                                                          (95.73%)
-bolete                                                                      (1.20%)
-triceratops                                                                 (0.43%)
-platypus, duckbill, duckbilled platypus, duck-billed platypus, Ornithorhynchus anatinus (0.36%)
-croquet ball                                                                (0.28%)
+Build VGG11 model successfully.
+Load VGG11 model weights `/VGG-PyTorch/results/pretrained_models/AlexNet-ImageNet_1K-9df8cd0f.pth.tar` successfully.
+tench, Tinca tinca                                                          (74.97%)
+barracouta, snoek                                                           (23.09%)
+gar, garfish, garpike, billfish, Lepisosteus osseus                         (0.81%)
+reel                                                                        (0.45%)
+armadillo                                                                   (0.25%)
 ```
 
 ## Contributing
 
-If you find a bug, create a GitHub issue, or even better, submit a pull request. Similarly, if you have questions, simply post them as GitHub issues.
+If you find a bug, create a GitHub issue, or even better, submit a pull request. Similarly, if you have questions,
+simply post them as GitHub issues.
 
 I look forward to seeing what the community does with these models!
 
 ### Credit
 
-#### ImageNet Classification with Deep Convolutional Neural Networks
+#### Very Deep Convolutional Networks for Large-Scale Image Recognition
 
-*Alex Krizhevsky,Ilya Sutskever,Geoffrey E. Hinton*
+*Karen Simonyan, Andrew Zisserman*
 
 ##### Abstract
 
-We trained a large, deep convolutional neural network to classify the 1.2 million
-high-resolution images in the ImageNet LSVRC-2010 contest into the 1000 different classes. On the test data, we achieved top-1 and top-5 error rates of 37.5%
-and 17.0% which is considerably better than the previous state-of-the-art. The
-neural network, which has 60 million parameters and 650,000 neurons, consists
-of five convolutional layers, some of which are followed by max-pooling layers,
-and three fully-connected layers with a final 1000-way softmax. To make training faster, we used non-saturating neurons and a very efficient GPU implementation of the convolution operation. To reduce overfitting in the fully-connected
-layers we employed a recently-developed regularization method called “dropout”
-that proved to be very effective. We also entered a variant of this model in the
-ILSVRC-2012 competition and achieved a winning top-5 test error rate of 15.3%,
-compared to 26.2% achieved by the second-best entry.
+In this work we investigate the effect of the convolutional network depth on its
+accuracy in the large-scale image recognition setting. Our main contribution is
+a thorough evaluation of networks of increasing depth using an architecture with
+very small (3×3) convolution filters, which shows that a significant improvement
+on the prior-art configurations can be achieved by pushing the depth to 16–19
+weight layers. These findings were the basis of our ImageNet Challenge 2014
+submission, where our team secured the first and the second places in the localisation and classification tracks
+respectively. We also show that our representations
+generalise well to other datasets, where they achieve state-of-the-art results. We
+have made our two best-performing ConvNet models publicly available to facilitate further research on the use of deep
+visual representations in computer vision.
 
-[[Paper]](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf)
+[[Paper]](https://arxiv.org/pdf/1409.1556v6.pdf)
 
 ```bibtex
-@article{AlexNet,
-    title = {ImageNet Classification with Deep Convolutional Neural Networks},
-    author = {Alex Krizhevsky,Ilya Sutskever,Geoffrey E. Hinton},
-    journal = {nips},
-    year = {2012}
+@article{simonyan2014very,
+  title={Very deep convolutional networks for large-scale image recognition},
+  author={Simonyan, Karen and Zisserman, Andrew},
+  journal={arXiv preprint arXiv:1409.1556},
+  year={2014}
 }
 ```

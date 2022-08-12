@@ -44,7 +44,7 @@ if mode == "train":
     num_workers = 4
 
     # The address to load the pretrained model
-    pretrained_model_path = "./results/pretrained_models/VGG11-ImageNet_1K.pth.tar"
+    pretrained_model_weights_path = "./results/pretrained_models/VGG11-ImageNet_1K.pth.tar"
 
     # Incremental training and migration training
     resume = ""
@@ -66,8 +66,9 @@ if mode == "train":
     lr_scheduler_T_mult = 1
     lr_scheduler_eta_min = 5e-5
 
-    # How many iterations to print the training result
-    print_frequency = 200
+    # How many iterations to print the training/validate result
+    train_print_frequency = 200
+    valid_print_frequency = 20
 
 if mode == "test":
     # Test data address
@@ -78,4 +79,7 @@ if mode == "test":
     batch_size = 256
     num_workers = 4
 
-    model_path = "./results/pretrained_models/VGG11-ImageNet_1K.pth.tar"
+    # How many iterations to print the testing result
+    test_print_frequency = 20
+
+    model_weights_path = "./results/pretrained_models/VGG11-ImageNet_1K.pth.tar"

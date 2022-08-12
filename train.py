@@ -55,23 +55,23 @@ def main():
     print("Define all optimizer scheduler functions successfully.")
 
     print("Check whether to load pretrained model weights...")
-    if config.pretrained_model_path:
+    if config.pretrained_model_weights_path:
         vgg_model, ema_vgg_model, start_epoch, best_acc1, optimizer, scheduler = load_state_dict(vgg_model,
+                                                                                                 config.pretrained_model_weights_path,
                                                                                                  ema_vgg_model,
-                                                                                                 config.pretrained_model_path,
                                                                                                  start_epoch,
                                                                                                  best_acc1,
                                                                                                  optimizer,
                                                                                                  scheduler)
-        print(f"Loaded `{config.pretrained_model_path}` pretrained model weights successfully.")
+        print(f"Loaded `{config.pretrained_model_weights_path}` pretrained model weights successfully.")
     else:
         print("Pretrained model weights not found.")
 
     print("Check whether the pretrained model is restored...")
     if config.resume:
         vgg_model, ema_vgg_model, start_epoch, best_acc1, optimizer, scheduler = load_state_dict(vgg_model,
+                                                                                                 config.pretrained_model_weights_path,
                                                                                                  ema_vgg_model,
-                                                                                                 config.pretrained_model_path,
                                                                                                  start_epoch,
                                                                                                  best_acc1,
                                                                                                  optimizer,
@@ -147,7 +147,7 @@ def load_dataset() -> [CUDAPrefetcher, CUDAPrefetcher]:
 
 
 def build_model() -> [nn.Module, nn.Module]:
-    vgg_model = model.__dict__[config.model_arch_name]()
+    vgg_model = model.__dict__[config.model_arch_name](num_classes=config.model_num_classes)
     vgg_model = vgg_model.to(device=config.device, memory_format=torch.channels_last)
 
     ema_avg = lambda averaged_model_parameter, model_parameter, num_averaged: (1 - config.model_ema_decay) * averaged_model_parameter + config.model_ema_decay * model_parameter
@@ -255,7 +255,7 @@ def train(
         end = time.time()
 
         # Write the data during training to the training log file
-        if batch_index % config.print_frequency == 0:
+        if batch_index % config.train_print_frequency == 0:
             # Record loss during training and output to file
             writer.add_scalar("Train/Loss", loss.item(), batch_index + epoch * batches + 1)
             progress.display(batch_index + 1)
@@ -263,7 +263,7 @@ def train(
         # Preload the next batch of data
         batch_data = train_prefetcher.next()
 
-        # After training a batch of data, add 1 to the number of data batches to ensure that the terminal prints data normally
+        # Add 1 to the number of data batches to ensure that the terminal prints data normally
         batch_index += 1
 
 
@@ -308,15 +308,15 @@ def validate(
 
             # measure accuracy and record loss
             top1, top5 = accuracy(output, target, topk=(1, 5))
-            acc1.update(top1[0], batch_size)
-            acc5.update(top5[0], batch_size)
+            acc1.update(top1[0].item(), batch_size)
+            acc5.update(top5[0].item(), batch_size)
 
             # Calculate the time it takes to fully train a batch of data
             batch_time.update(time.time() - end)
             end = time.time()
 
             # Write the data during training to the training log file
-            if batch_index % 10 == 0:
+            if batch_index % config.valid_print_frequency == 0:
                 progress.display(batch_index + 1)
 
             # Preload the next batch of data

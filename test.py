@@ -14,13 +14,12 @@
 import os
 import time
 
+import config
+import model
 import torch
+from dataset import CUDAPrefetcher, ImageDataset
 from torch import nn
 from torch.utils.data import DataLoader
-
-import config
-from dataset import CUDAPrefetcher, ImageDataset
-import model
 from utils import load_state_dict, accuracy, Summary, AverageMeter, ProgressMeter
 
 model_names = sorted(
@@ -28,7 +27,7 @@ model_names = sorted(
 
 
 def build_model() -> nn.Module:
-    vgg_model = model.__dict__[config.model_arch_name]()
+    vgg_model = model.__dict__[config.model_arch_name](num_classes=config.model_num_classes)
     vgg_model = vgg_model.to(device=config.device, memory_format=torch.channels_last)
 
     return vgg_model
@@ -52,15 +51,16 @@ def load_dataset() -> CUDAPrefetcher:
 
 def main() -> None:
     # Initialize the model
-    model = build_model()
+    vgg_model = build_model()
     print(f"Build {config.model_arch_name.upper()} model successfully.")
 
     # Load model weights
-    model, _, _, _, _, _ = load_state_dict(model, config.model_path)
-    print(f"Load {config.model_arch_name.upper()} model weights `{os.path.abspath(config.model_path)}` successfully.")
+    vgg_model, _, _, _, _, _ = load_state_dict(vgg_model, config.model_weights_path)
+    print(f"Load {config.model_arch_name.upper()} model "
+          f"weights `{os.path.abspath(config.model_weights_path)}` successfully.")
 
     # Start the verification mode of the model.
-    model.eval()
+    vgg_model.eval()
 
     # Load test dataloader
     test_prefetcher = load_dataset()
@@ -85,32 +85,32 @@ def main() -> None:
     with torch.no_grad():
         while batch_data is not None:
             # Transfer in-memory data to CUDA devices to speed up training
-            images = batch_data["image"].to(device=config.device, memory_format=torch.channels_last, non_blocking=True)
+            images = batch_data["image"].to(device=config.device, non_blocking=True)
             target = batch_data["target"].to(device=config.device, non_blocking=True)
 
             # Get batch size
             batch_size = images.size(0)
 
             # Inference
-            output = model(images)
+            output = vgg_model(images)
 
             # measure accuracy and record loss
             top1, top5 = accuracy(output, target, topk=(1, 5))
-            acc1.update(top1[0], batch_size)
-            acc5.update(top5[0], batch_size)
+            acc1.update(top1[0].item(), batch_size)
+            acc5.update(top5[0].item(), batch_size)
 
             # Calculate the time it takes to fully train a batch of data
             batch_time.update(time.time() - end)
             end = time.time()
 
             # Write the data during training to the training log file
-            if batch_index % 10 == 0:
+            if batch_index % config.test_print_frequency == 0:
                 progress.display(batch_index + 1)
 
             # Preload the next batch of data
             batch_data = test_prefetcher.next()
 
-            # After training a batch of data, add 1 to the number of data batches to ensure that the terminal prints data normally
+            # Add 1 to the number of data batches to ensure that the terminal prints data normally
             batch_index += 1
 
     # print metrics

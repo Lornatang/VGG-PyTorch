@@ -45,7 +45,7 @@ def choice_device(device_type: str) -> torch.device:
     return device
 
 
-def build_model(model_arch_name:str, model_num_classes: int, device: torch.device) -> [nn.Module, nn.Module]:
+def build_model(model_arch_name: str, model_num_classes: int, device: torch.device) -> [nn.Module, nn.Module]:
     vgg_model = model.__dict__[model_arch_name](num_classes=model_num_classes)
     vgg_model = vgg_model.to(device=device, memory_format=torch.channels_last)
 
