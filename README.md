@@ -1,262 +1,143 @@
-# VGGNet-PyTorch
+# VGG-PyTorch
 
-### Update (Feb 14, 2020)
+<a href="https://console.tiyaro.ai/explore/trn:model:123456789012-venkat:1.0:alexnet_pytorch_6c50c5">
+<img src="https://tiyaro-public-docs.s3.us-west-2.amazonaws.com/assets/tiyaro_badge.svg"></a>
 
-The update is for ease of use and deployment.
 
- * [Example: Export to ONNX](#example-export-to-onnx)
- * [Example: Extract features](#example-feature-extraction)
- * [Example: Visual](#example-visual)
+## Overview
 
-It is also now incredibly simple to load a pretrained model with a new number of classes for transfer learning:
+This repository contains an op-for-op PyTorch reimplementation of [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/pdf/1409.1556v6.pdf).
 
-```python
-from vgg_pytorch import VGG 
-model = VGG.from_pretrained('vgg11', num_classes=10)
-```
+## Table of contents
 
-### Update (January 15, 2020)
+- [AlexNet-PyTorch](#alexnet-pytorch)
+    - [Overview](#overview)
+    - [Table of contents](#table-of-contents)
+    - [Download weights](#download-weights)
+    - [Download datasets](#download-datasets)
+    - [How Test and Train](#how-test-and-train)
+        - [Test](#test)
+        - [Train model](#train-model)
+        - [Resume train model](#resume-train-model)
+    - [Result](#result)
+    - [Contributing](#contributing)
+    - [Credit](#credit)
+        - [ImageNet Classification with Deep Convolutional Neural Networks](#imagenet-classification-with-deep-convolutional-neural-networks)
 
-This update allows you to use NVIDIA's Apex tool for accelerated training. By default choice `hybrid training precision` + `dynamic loss amplified` version, if you need to learn more and details about `apex` tools, please visit https://github.com/NVIDIA/apex.
+## Download weights
 
-### Update (January 9, 2020)
+- [Google Driver](https://drive.google.com/drive/folders/17ju2HN7Y6pyPK2CC_AqnAfTOe9_3hCQ8?usp=sharing)
+- [Baidu Driver](https://pan.baidu.com/s/1yNs4rqIb004-NKEdKBJtYg?pwd=llot)
 
-This update adds a visual interface for testing, which is developed by pyqt5. At present, it has realized basic functions, and other functions will be gradually improved in the future.
+## Download datasets
 
-### Update (January 6, 2020)
+Contains MNIST, CIFAR10&CIFAR100, TinyImageNet_200, MiniImageNet_1K, ImageNet_1K, Caltech101&Caltech256 and more etc.
 
-This update adds a modular neural network, making it more flexible in use. It can be deployed to many common dataset classification tasks. Of course, it can also be used in your products.
+- [Google Driver](https://drive.google.com/drive/folders/1f-NSpZc07Qlzhgi6EbBEI1wTkN1MxPbQ?usp=sharing)
+- [Baidu Driver](https://pan.baidu.com/s/1arNM38vhDT7p4jKeD4sqwA?pwd=llot)
 
-### Overview
-This repository contains an op-for-op PyTorch reimplementation of [VGGNet](https://arxiv.org/pdf/1409.1556.pdf).
+Please refer to `README.md` in the `data` directory for the method of making a dataset.
 
-The goal of this implementation is to be simple, highly extensible, and easy to integrate into your own projects. This implementation is a work in progress -- new features are currently being implemented.  
+## How Test and Train
 
-At the moment, you can easily:  
- * Load pretrained VGGNet models 
- * Use VGGNet models for classification or feature extraction 
+Both training and testing only need to modify the `config.py` file. 
 
-_Upcoming features_: In the next few days, you will be able to:
- * Quickly finetune an VGGNet on your own dataset
- * Export VGGNet models for production
+### Test
 
-### Table of contents
-1. [About VGG](#about-vgg)
-2. [Installation](#installation)
-3. [Usage](#usage)
-    * [Load pretrained models](#loading-pretrained-models)
-    * [Example: Classify](#example-classification)
-    * [Example: Extract features](#example-feature-extraction)
-    * [Example: Export to ONNX](#example-export-to-onnx)
-    * [Example: Visual](#example-visual)
-4. [Contributing](#contributing) 
+- line 29: `model_num_classes` change to `1000`.
+- line 31: `mode` change to `test`.
+- line 79: `model_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
 
-### About VGG
-
-If you're new to VGGNets, here is an explanation straight from the official PyTorch implementation: 
-
-In this work we investigate the effect of the convolutional network depth on its
-accuracy in the large-scale image recognition setting. Our main contribution is
-a thorough evaluation of networks of increasing depth using an architecture with
-very small (3 × 3) convolution filters, which shows that a significant improvement
-on the prior-art configurations can be achieved by pushing the depth to 16–19
-weight layers. These findings were the basis of our ImageNet Challenge 2014
-submission, where our team secured the first and the second places in the localisation and classification tracks respectively. We also show that our representations
-generalise well to other datasets, where they achieve state-of-the-art results. We
-have made our two best-performing ConvNet models publicly available to facilitate further research on the use of deep visual representations in computer vision.
-
-### Installation
-
-Install from pypi:
 ```bash
-$ pip3 install vgg_pytorch
+python3 test.py
 ```
 
-Install from source:
+### Train model
+
+- line 29: `model_num_classes` change to `1000`.
+- line 31: `mode` change to `train`.
+- line 33: `exp_name` change to `VGG11-ImageNet_1K`.
+- line 45: `pretrained_model_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
+
 ```bash
-$ git clone https://github.com/Lornatang/VGGNet-PyTorch.git
-$ cd VGGNet-PyTorch
-$ pip3 install -e .
+python3 train.py
 ```
 
-### Usage
+### Resume train model
 
-#### Loading pretrained models
+- line 29: `model_num_classes` change to `1000`.
+- line 31: `mode` change to `train`.
+- line 33: `exp_name` change to `VGG11-ImageNet_1K`.
+- line 48: `resume` change to `./samples/VGG11-ImageNet_1K/epoch_xxx.pth.tar`.
 
-Load an vgg11 network:
-```python
-from vgg_pytorch import VGG
-model = VGG.from_name("vgg11")
+```bash
+python3 train.py
 ```
 
-Load a pretrained vgg11: 
-```python
-from vgg_pytorch import VGG
-model = VGG.from_pretrained("vgg11")
+## Result
+
+Source of original paper results: [https://arxiv.org/pdf/1409.1556v6.pdf](https://arxiv.org/pdf/1409.1556v6.pdf))
+
+In the following table, the top-x error value in `()` indicates the result of the project, and `-` indicates no test.
+
+|  Model  |   Dataset   | Top-1 error (val) | Top-5 error (val) |
+|:-------:|:-----------:|:-----------------:|:-----------------:|
+| AlexNet | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+
+```bash
+# Download `AlexNet-ImageNet_1K-9df8cd0f.pth.tar` weights to `./results/pretrained_models`
+# More detail see `README.md<Download weights>`
+python3 ./inference.py 
 ```
 
-Their 1-crop error rates on imagenet dataset with pretrained models are listed below.
+Input: 
 
-| Model structure | Top-1 error | Top-5 error |
-| --------------- | ----------- | ----------- |
-|  vgg11          | 30.98       | 11.37       |
-|  vgg11_bn       | 29.70       | 10.19       |
-|  vgg13          | 30.07       | 10.75       |
-|  vgg13_bn       | 28.45       | 9.63        |
-|  vgg16          | 28.41       | 9.62        |
-|  vgg16_bn       | 26.63       | 8.50        |
-|  vgg19          | 27.62       | 9.12        |
-|  vgg19_bn       | 25.76       | 8.15        |
+<span align="center"><img width="224" height="224" src="figure/n01440764_36.JPEG"/></span>
 
-Details about the models are below (for CIFAR10 dataset): 
-
-|      *Name*       |*# Params*|*Top-1 Acc.*|*Pretrained?*|
-|:-----------------:|:--------:|:----------:|:-----------:|
-|     `vgg11`       |  132.9M  |    91.1    |      √      |
-|     `vgg13`       |   133M   |    92.8    |      √      |
-|     `vgg16`       |  138.4M  |    92.6    |      √      |
-|     `vgg19`       |  143.7M  |    92.3    |      √      |
-|-------------------|----------|------------|-------------|
-|     `vgg11_bn`    |  132.9M  |    92.2    |      √      |
-|     `vgg13_bn`    |   133M   |    94.2    |      √      |
-|     `vgg16_bn`    |  138.4M  |    93.9    |      √      |
-|     `vgg19_bn`    |  143.7M  |    93.7    |      √      |
-
-
-#### Example: Classification
-
-We assume that in your current directory, there is a `img.jpg` file and a `labels_map.txt` file (ImageNet class names). These are both included in `examples/simple`. 
-
-All pre-trained models expect input images normalized in the same way,
-i.e. mini-batches of 3-channel RGB images of shape `(3 x H x W)`, where `H` and `W` are expected to be at least `224`.
-The images have to be loaded in to a range of `[0, 1]` and then normalized using `mean = [0.485, 0.456, 0.406]`
-and `std = [0.229, 0.224, 0.225]`.
-
-Here's a sample execution.
-
-```python
-import json
-
-import torch
-import torchvision.transforms as transforms
-from PIL import Image
-
-from vgg_pytorch import VGG 
-
-# Open image
-input_image = Image.open("img.jpg")
-
-# Preprocess image
-preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
-input_tensor = preprocess(input_image)
-input_batch = input_tensor.unsqueeze(0)  # create a mini-batch as expected by the model
-
-# Load class names
-labels_map = json.load(open("labels_map.txt"))
-labels_map = [labels_map[str(i)] for i in range(1000)]
-
-# Classify with VGG11
-model = VGG.from_pretrained("vgg11")
-model.eval()
-
-# move the input and model to GPU for speed if available
-if torch.cuda.is_available():
-    input_batch = input_batch.to("cuda")
-    model.to("cuda")
-
-with torch.no_grad():
-    logits = model(input_batch)
-preds = torch.topk(logits, k=5).indices.squeeze(0).tolist()
-
-print("-----")
-for idx in preds:
-    label = labels_map[idx]
-    prob = torch.softmax(logits, dim=1)[0, idx].item()
-    print(f"{label:<75} ({prob * 100:.2f}%)")
-```
-
-#### Example: Feature Extraction 
-
-You can easily extract features with `model.extract_features`:
-```python
-import torch
-from vgg_pytorch import VGG 
-model = VGG.from_pretrained('vgg11')
-
-# ... image preprocessing as in the classification example ...
-inputs = torch.randn(1, 3, 224, 224)
-print(inputs.shape) # torch.Size([1, 3, 224, 224])
-
-features = model.extract_features(inputs)
-print(features.shape) # torch.Size([1, 512, 7, 7])
-```
-
-#### Example: Export to ONNX  
-
-Exporting to ONNX for deploying to production is now simple: 
-```python
-import torch 
-from vgg_pytorch import VGG 
-
-model = VGG.from_pretrained('vgg11')
-dummy_input = torch.randn(16, 3, 224, 224)
-
-torch.onnx.export(model, dummy_input, "demo.onnx", verbose=True)
-```
-
-#### Example: Visual
+Output: 
 
 ```text
-cd $REPO$/framework
-sh start.sh
+Build AlexNet model successfully.
+Load AlexNet model weights `/home/dl/Code/AlexNet-PyTorch/results/pretrained_models/AlexNet-ImageNet_1K-9df8cd0f.pth.tar` successfully.
+tench, Tinca tinca                                                          (95.73%)
+bolete                                                                      (1.20%)
+triceratops                                                                 (0.43%)
+platypus, duckbill, duckbilled platypus, duck-billed platypus, Ornithorhynchus anatinus (0.36%)
+croquet ball                                                                (0.28%)
 ```
 
-Then open the browser and type in the browser address [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+## Contributing
 
-Enjoy it.
+If you find a bug, create a GitHub issue, or even better, submit a pull request. Similarly, if you have questions, simply post them as GitHub issues.
 
-#### ImageNet
-
-See `examples/imagenet` for details about evaluating on ImageNet.
-
-For more datasets result. Please see `research/README.md`.
-
-### Contributing
-
-If you find a bug, create a GitHub issue, or even better, submit a pull request. Similarly, if you have questions, simply post them as GitHub issues.   
-
-I look forward to seeing what the community does with these models! 
+I look forward to seeing what the community does with these models!
 
 ### Credit
 
-#### Very Deep Convolutional Networks for Large-Scale Image Recognition
+#### ImageNet Classification with Deep Convolutional Neural Networks
 
-*Karen Simonyan, Andrew Zisserman*
+*Alex Krizhevsky,Ilya Sutskever,Geoffrey E. Hinton*
 
 ##### Abstract
 
-In this work we investigate the effect of the convolutional network depth on its accuracy in the 
-large-scale image recognition setting. Our main contribution is a thorough evaluation of networks 
-of increasing depth using an architecture with very small (3x3) convolution filters, which shows 
-that a significant improvement on the prior-art configurations can be achieved by pushing the depth 
-to 16-19 weight layers. These findings were the basis of our ImageNet Challenge 2014 submission, 
-where our team secured the first and the second places in the localisation and classification tracks 
-respectively. We also show that our representations generalise well to other datasets, where they 
-achieve state-of-the-art results. We have made our two best-performing ConvNet models publicly 
-available to facilitate further research on the use of deep visual representations in computer vision.
+We trained a large, deep convolutional neural network to classify the 1.2 million
+high-resolution images in the ImageNet LSVRC-2010 contest into the 1000 different classes. On the test data, we achieved top-1 and top-5 error rates of 37.5%
+and 17.0% which is considerably better than the previous state-of-the-art. The
+neural network, which has 60 million parameters and 650,000 neurons, consists
+of five convolutional layers, some of which are followed by max-pooling layers,
+and three fully-connected layers with a final 1000-way softmax. To make training faster, we used non-saturating neurons and a very efficient GPU implementation of the convolution operation. To reduce overfitting in the fully-connected
+layers we employed a recently-developed regularization method called “dropout”
+that proved to be very effective. We also entered a variant of this model in the
+ILSVRC-2012 competition and achieved a winning top-5 test error rate of 15.3%,
+compared to 26.2% achieved by the second-best entry.
 
-[paper](https://arxiv.org/abs/1409.1556)
+[[Paper]](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf)
 
-```text
-@article{VGG,
-title:{Very Deep Convolutional Networks for Large-Scale Image Recognition},
-author:{Karen Simonyan, Andrew Zisserman},
-journal={iclr},
-year={2015}
+```bibtex
+@article{AlexNet,
+    title = {ImageNet Classification with Deep Convolutional Neural Networks},
+    author = {Alex Krizhevsky,Ilya Sutskever,Geoffrey E. Hinton},
+    journal = {nips},
+    year = {2012}
 }
 ```
