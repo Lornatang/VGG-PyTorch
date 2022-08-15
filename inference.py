@@ -114,7 +114,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_arch_name", type=str, default="vgg11")
     parser.add_argument("--class_label_file", type=str, default="./data/ImageNet_1K_labels_map.txt")
     parser.add_argument("--model_num_classes", type=int, default=1000)
-    parser.add_argument("--model_weights_path", type=str, default="./results/pretrained_models/VGG11-ImageNet_1K.pth.tar")
+    parser.add_argument("--model_weights_path", type=str, default="./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar")
     parser.add_argument("--image_path", type=str, default="./figure/n01440764_36.JPEG")
     parser.add_argument("--image_size", type=int, default=224)
     parser.add_argument("--device_type", type=str, default="cpu", choices=["cpu", "cuda"])

@@ -47,7 +47,7 @@ Both training and testing only need to modify the `config.py` file.
 - line 29: `model_arch_name` change to `vgg11`.
 - line 31: `model_num_classes` change to `1000`.
 - line 33: `mode` change to `test`.
-- line 81: `model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
+- line 81: `model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar`.
 
 ```bash
 python3 test.py
@@ -58,7 +58,7 @@ python3 test.py
 - line 29: `model_arch_name` change to `vgg11`.
 - line 31: `model_num_classes` change to `1000`.
 - line 33: `mode` change to `train`.
-- line 47: `pretrained_model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-9df8cd0f.pth.tar`.
+- line 47: `pretrained_model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar`.
 
 ```bash
 python3 train.py
@@ -83,17 +83,17 @@ In the following table, the top-x error value in `()` indicates the result of th
 
 |  Model   |   Dataset   | Top-1 error (val) | Top-5 error (val) |
 |:--------:|:-----------:|:-----------------:|:-----------------:|
-|  VGG11   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-| VGG11_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-|  VGG13   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-| VGG13_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-|  VGG16   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-| VGG16_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-|  VGG19   | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
-| VGG19_BN | ImageNet_1K | 36.7%(**43.8%**)  | 15.4%(**21.3%**)  |
+|  VGG11   | ImageNet_1K | 29.6%(**30.9%**)  | 10.4%(**11.3%**)  |
+| VGG11_BN | ImageNet_1K |   -(**29.6%**)    |   -(**10.2%**)    |
+|  VGG13   | ImageNet_1K | 28.7%(**30.1%**)  |  9.9%(**10.8%**)  |
+| VGG13_BN | ImageNet_1K |   -(**28.4%**)    |    -(**9.6%**)    |
+|  VGG16   | ImageNet_1K | 27.0%(**28.4%**)  |  8.8%(**9.6%**)   |
+| VGG16_BN | ImageNet_1K |   -(**26.6%**)    |    -(**8.5%**)    |
+|  VGG19   | ImageNet_1K | 27.3%(**27.6%**)  |  9.0%(**9.1%**)   |
+| VGG19_BN | ImageNet_1K |   -(**25.7%**)    |    -(**8.1%**)    |
 
 ```bash
-# Download `VGG11-ImageNet_1K-9df8cd0f.pth.tar` weights to `./results/pretrained_models`
+# Download `VGG11-ImageNet_1K-64f6524f.pth.tar` weights to `./results/pretrained_models`
 # More detail see `README.md<Download weights>`
 python3 ./inference.py 
 ```
@@ -106,7 +106,7 @@ Output:
 
 ```text
 Build VGG11 model successfully.
-Load VGG11 model weights `/VGG-PyTorch/results/pretrained_models/AlexNet-ImageNet_1K-9df8cd0f.pth.tar` successfully.
+Load VGG11 model weights `/VGG-PyTorch/results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar` successfully.
 tench, Tinca tinca                                                          (74.97%)
 barracouta, snoek                                                           (23.09%)
 gar, garfish, garpike, billfish, Lepisosteus osseus                         (0.81%)
