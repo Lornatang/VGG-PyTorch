@@ -40,14 +40,16 @@ Please refer to `README.md` in the `data` directory for the method of making a d
 
 ## How Test and Train
 
-Both training and testing only need to modify the `config.py` file.
+Both training and testing only need to modify the `test_config.py` file.
 
 ### Test
 
-- line 29: `model_arch_name` change to `vgg11`.
+Modify `test_config.py` file.
+
+- line 17: `model_arch_name` change to `vgg11`.
 - line 31: `model_num_classes` change to `1000`.
-- line 33: `mode` change to `test`.
-- line 81: `model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar`.
+- line 24: `mode` change to `./data/ImageNet_1K/ILSVRC2012_img_val`.
+- line 37: `model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar`.
 
 ```bash
 python3 test.py
@@ -55,10 +57,13 @@ python3 test.py
 
 ### Train model
 
-- line 29: `model_arch_name` change to `vgg11`.
-- line 31: `model_num_classes` change to `1000`.
-- line 33: `mode` change to `train`.
-- line 47: `pretrained_model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar`.
+Modify `train_config.py` file.
+
+- line 18: `model_arch_name` change to `vgg11`.
+- line 19: `model_num_classes` change to `1000`.
+- line 25: `mode` change to `./data/ImageNet_1K/ILSVRC2012_img_train`.
+- line 26: `mode` change to `./data/ImageNet_1K/ILSVRC2012_img_val`.
+- line 37: `pretrained_model_weights_path` change to `./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar`.
 
 ```bash
 python3 train.py
@@ -66,10 +71,13 @@ python3 train.py
 
 ### Resume train model
 
-- line 29: `model_arch_name` change to `vgg11`.
-- line 31: `model_num_classes` change to `1000`.
-- line 33: `mode` change to `train`.
-- line 50: `resume` change to `./samples/VGG11-ImageNet_1K/epoch_xxx.pth.tar`.
+Modify `train_config.py` file.
+
+- line 18: `model_arch_name` change to `vgg11`.
+- line 19: `model_num_classes` change to `1000`.
+- line 25: `mode` change to `./data/ImageNet_1K/ILSVRC2012_img_train`.
+- line 26: `mode` change to `./data/ImageNet_1K/ILSVRC2012_img_val`.
+- line 40: `resume_model_weights_path` change to `./samples/VGG11-ImageNet_1K/epoch_xxx.pth.tar`.
 
 ```bash
 python3 train.py

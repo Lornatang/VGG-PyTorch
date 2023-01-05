@@ -13,12 +13,13 @@
 # ==============================================================================
 seed = 0
 device = "cuda:0"
+
 # Model configure
-model_arch_name = "vgg19"
+model_arch_name = "vgg11"
 model_num_classes = 1000
 
 # Experiment name, easy to save weights and log files
-exp_name = f"VGG19-ImageNet_1K"
+exp_name = "VGG11-ImageNet_1K"
 
 # Dataset address
 train_image_dir = "./data/ImageNet_1K/ILSVRC2012_img_train"
@@ -33,7 +34,7 @@ batch_size = 128
 num_workers = 4
 
 # The address to load the pretrained model
-pretrained_model_weights_path = "./results/pretrained_models/VGG19-ImageNet_1K-53d9a5c0.pth.tar"
+pretrained_model_weights_path = "./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar"
 
 # Incremental training and migration training
 resume_model_weights_path = ""

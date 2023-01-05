@@ -14,11 +14,11 @@
 device = "cuda:0"
 
 # Model configure
-model_arch_name = "vgg19"
+model_arch_name = "vgg11"
 model_num_classes = 1000
 
 # Experiment name, easy to save weights and log files
-exp_name = f"VGG19-ImageNet_1K"
+exp_name = "VGG19-ImageNet_1K"
 
 # Dataset address
 test_image_dir = "./data/ImageNet_1K/ILSVRC2012_img_val"
@@ -34,4 +34,4 @@ num_workers = 4
 # How many iterations to print the testing result
 test_print_frequency = 20
 
-model_weights_path = "./results/pretrained_models/VGG19-ImageNet_1K.pth.tar"
+model_weights_path = "./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar"
