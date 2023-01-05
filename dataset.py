@@ -24,7 +24,7 @@ from torchvision import transforms
 from torchvision.datasets.folder import find_classes
 from torchvision.transforms import TrivialAugmentWide
 
-import imgproc
+from imgproc import image_to_tensor
 
 __all__ = [
     "ImageDataset",
@@ -45,26 +45,42 @@ class ImageDataset(Dataset):
     """Define training/valid dataset loading methods.
 
     Args:
-        image_dir (str): Train/Valid dataset address.
-        image_size (int): Image size.
+        images_dir (str): Train/Valid dataset address.
+        resized_image_size (int): Resized image size.
+        crop_image_size (int): Crop image size.
         mode (str): Data set loading method, the training data set is for data enhancement,
             and the verification data set is not for data enhancement.
     """
 
-    def __init__(self, image_dir: str, image_size: int, mode: str) -> None:
+    def __init__(
+            self,
+            images_dir: str,
+            resized_image_size: int,
+            crop_image_size: int,
+            mean_normalize: tuple = None,
+            std_normalize: tuple = None,
+            mode: str = "train",
+    ) -> None:
         super(ImageDataset, self).__init__()
+        if mean_normalize is None:
+            mean_normalize = (0.485, 0.456, 0.406)
+        if std_normalize is None:
+            std_normalize = (0.229, 0.224, 0.225)
         # Iterate over all image paths
-        self.image_file_paths = glob(f"{image_dir}/*/*")
+        self.images_file_path = glob(f"{images_dir}/*/*")
         # Form image class label pairs by the folder where the image is located
-        _, self.class_to_idx = find_classes(image_dir)
-        self.image_size = image_size
+        _, self.class_to_idx = find_classes(images_dir)
+        self.crop_image_size = crop_image_size
+        self.resized_image_size = resized_image_size
+        self.mean_normalize = mean_normalize
+        self.std_normalize = std_normalize
         self.mode = mode
         self.delimiter = delimiter
 
         if self.mode == "Train":
             # Use PyTorch's own data enhancement to enlarge and enhance data
             self.pre_transform = transforms.Compose([
-                transforms.RandomResizedCrop(self.image_size),
+                transforms.RandomResizedCrop((self.resized_image_size, self.resized_image_size)),
                 TrivialAugmentWide(),
                 transforms.RandomRotation([0, 270]),
                 transforms.RandomHorizontalFlip(0.5),
@@ -73,23 +89,23 @@ class ImageDataset(Dataset):
         elif self.mode == "Valid" or self.mode == "Test":
             # Use PyTorch's own data enhancement to enlarge and enhance data
             self.pre_transform = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop([self.image_size, self.image_size]),
+                transforms.Resize((self.resized_image_size, self.resized_image_size)),
+                transforms.CenterCrop((self.crop_image_size, self.crop_image_size)),
             ])
         else:
             raise "Unsupported data read type. Please use `Train` or `Valid` or `Test`"
 
         self.post_transform = transforms.Compose([
             transforms.ConvertImageDtype(torch.float),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize(self.mean_normalize, self.std_normalize)
         ])
 
     def __getitem__(self, batch_index: int) -> [torch.Tensor, int]:
-        image_dir, image_name = self.image_file_paths[batch_index].split(self.delimiter)[-2:]
+        images_dir, images_name = self.images_file_path[batch_index].split(self.delimiter)[-2:]
         # Read a batch of image data
-        if image_name.split(".")[-1].lower() in IMG_EXTENSIONS:
-            image = cv2.imread(self.image_file_paths[batch_index])
-            target = self.class_to_idx[image_dir]
+        if images_name.split(".")[-1].lower() in IMG_EXTENSIONS:
+            image = cv2.imread(self.images_file_path[batch_index])
+            target = self.class_to_idx[images_dir]
         else:
             raise ValueError(f"Unsupported image extensions, Only support `{IMG_EXTENSIONS}`, "
                              "please check the image file extensions.")
@@ -105,7 +121,7 @@ class ImageDataset(Dataset):
 
         # Convert image data into Tensor stream format (PyTorch).
         # Note: The range of input and output is between [0, 1]
-        tensor = imgproc.image_to_tensor(image, False, False)
+        tensor = image_to_tensor(image, False, False)
 
         # Data postprocess
         tensor = self.post_transform(tensor)
@@ -113,7 +129,7 @@ class ImageDataset(Dataset):
         return {"image": tensor, "target": target}
 
     def __len__(self) -> int:
-        return len(self.image_file_paths)
+        return len(self.images_file_path)
 
 
 class PrefetchGenerator(threading.Thread):
