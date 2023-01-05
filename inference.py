@@ -12,88 +12,45 @@
 # limitations under the License.
 # ==============================================================================
 import argparse
-import json
-import os
 
-import cv2
 import torch
-from PIL import Image
 from torch import nn
-from torchvision.transforms import Resize, ConvertImageDtype, Normalize
 
-import imgproc
 import model
-from utils import load_state_dict
-
-model_names = sorted(
-    name for name in model.__dict__ if name.islower() and not name.startswith("__") and callable(model.__dict__[name]))
+from imgproc import preprocess_one_image
+from utils import load_class_label, load_pretrained_state_dict
 
 
-def load_class_label(class_label_file: str, num_classes: int) -> list:
-    class_label = json.load(open(class_label_file))
-    class_label_list = [class_label[str(i)] for i in range(num_classes)]
-
-    return class_label_list
-
-
-def choice_device(device_type: str) -> torch.device:
-    # Select model processing equipment type
-    if device_type == "cuda":
-        device = torch.device("cuda", 0)
-    else:
-        device = torch.device("cpu")
-    return device
-
-
-def build_model(model_arch_name: str, model_num_classes: int, device: torch.device) -> [nn.Module, nn.Module]:
-    vgg_model = model.__dict__[model_arch_name](num_classes=model_num_classes)
-    vgg_model = vgg_model.to(device=device, memory_format=torch.channels_last)
+def build_model(
+        model_arch_name: str,
+        num_classes: int,
+        device: torch.device,
+) -> nn.Module:
+    vgg_model = model.__dict__[model_arch_name](num_classes=num_classes)
+    vgg_model = vgg_model.to(device)
 
     return vgg_model
 
 
-def preprocess_image(image_path: str, image_size: int, device: torch.device) -> torch.Tensor:
-    image = cv2.imread(image_path)
-
-    # BGR to RGB
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # OpenCV convert PIL
-    image = Image.fromarray(image)
-
-    # Resize to 224
-    image = Resize([image_size, image_size])(image)
-    # Convert image data to pytorch format data
-    tensor = imgproc.image_to_tensor(image, False, False).unsqueeze_(0)
-    # Convert a tensor image to the given ``dtype`` and scale the values accordingly
-    tensor = ConvertImageDtype(torch.float)(tensor)
-    # Normalize a tensor image with mean and standard deviation.
-    tensor = Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])(tensor)
-
-    # Transfer tensor channel image format data to CUDA device
-    tensor = tensor.to(device=device, memory_format=torch.channels_last, non_blocking=True)
-
-    return tensor
-
-
 def main():
+    device = torch.device(args.device)
     # Get the label name corresponding to the drawing
     class_label_map = load_class_label(args.class_label_file, args.model_num_classes)
 
-    device = choice_device(args.device_type)
-
     # Initialize the model
     vgg_model = build_model(args.model_arch_name, args.model_num_classes, device)
-    print("Build VGG model successfully.")
-
-    # Load model weights
-    vgg_model, _, _, _, _, _ = load_state_dict(vgg_model, args.model_weights_path)
-    print(f"Load VGG model weights `{os.path.abspath(args.model_weights_path)}` successfully.")
+    vgg_model = load_pretrained_state_dict(vgg_model, args.model_weights_path)
 
     # Start the verification mode of the model.
     vgg_model.eval()
 
-    tensor = preprocess_image(args.image_path, args.image_size, device)
+    tensor = preprocess_one_image(args.image_path,
+                                  args.image_size,
+                                  args.range_norm,
+                                  args.half,
+                                  args.mean_normalize,
+                                  args.std_normalize,
+                                  device)
 
     # Inference
     with torch.no_grad():
@@ -114,10 +71,15 @@ if __name__ == "__main__":
     parser.add_argument("--model_arch_name", type=str, default="vgg11")
     parser.add_argument("--class_label_file", type=str, default="./data/ImageNet_1K_labels_map.txt")
     parser.add_argument("--model_num_classes", type=int, default=1000)
-    parser.add_argument("--model_weights_path", type=str, default="./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar")
+    parser.add_argument("--model_weights_path", type=str,
+                        default="./results/pretrained_models/VGG11-ImageNet_1K-64f6524f.pth.tar")
     parser.add_argument("--image_path", type=str, default="./figure/n01440764_36.JPEG")
     parser.add_argument("--image_size", type=int, default=224)
-    parser.add_argument("--device_type", type=str, default="cpu", choices=["cpu", "cuda"])
+    parser.add_argument("--range_norm", type=bool, default=False)
+    parser.add_argument("--half", type=bool, default=False)
+    parser.add_argument("--mean_normalize", type=tuple, default=(0.485, 0.456, 0.406))
+    parser.add_argument("--std_normalize", type=tuple, default=(0.229, 0.224, 0.225))
+    parser.add_argument("--device", type=str, default="cpu", choices=["cpu", "cuda:0"])
     args = parser.parse_args()
 
     main()

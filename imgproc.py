@@ -13,15 +13,18 @@
 # ==============================================================================
 import random
 from typing import Any
-from torch import Tensor
-from numpy import ndarray
+
 import cv2
 import numpy as np
 import torch
+from PIL import Image
+from numpy import ndarray
+from torch import Tensor
+from torchvision.transforms import Resize, ConvertImageDtype, Normalize
 from torchvision.transforms import functional as F_vision
 
 __all__ = [
-    "image_to_tensor", "tensor_to_image",
+    "image_to_tensor", "tensor_to_image", "preprocess_one_image",
     "center_crop", "random_crop", "random_rotate", "random_vertically_flip", "random_horizontally_flip",
 ]
 
@@ -83,6 +86,38 @@ def tensor_to_image(tensor: torch.Tensor, range_norm: bool, half: bool) -> Any:
     image = tensor.squeeze(0).permute(1, 2, 0).mul(255).clamp(0, 255).cpu().numpy().astype("uint8")
 
     return image
+
+
+def preprocess_one_image(
+        image_path: str,
+        image_size: int,
+        range_norm: bool,
+        half: bool,
+        mean_normalize: tuple,
+        std_normalize: tuple,
+        device: torch.device,
+) -> torch.Tensor:
+    image = cv2.imread(image_path)
+
+    # BGR to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # OpenCV convert PIL
+    image = Image.fromarray(image)
+
+    # Resize
+    image = Resize([image_size, image_size])(image)
+    # Convert image data to pytorch format data
+    tensor = image_to_tensor(image, range_norm, half).unsqueeze_(0)
+    # Convert a tensor image to the given ``dtype`` and scale the values accordingly
+    tensor = ConvertImageDtype(torch.float)(tensor)
+    # Normalize a tensor image with mean and standard deviation.
+    tensor = Normalize(mean_normalize, std_normalize)(tensor)
+
+    # Transfer tensor channel image format data to CUDA device
+    tensor = tensor.to(device, non_blocking=True)
+
+    return tensor
 
 
 def center_crop(

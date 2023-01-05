@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import json
 import os
 import shutil
 from enum import Enum
@@ -20,7 +21,7 @@ import torch
 from torch import nn, optim
 
 __all__ = [
-    "accuracy", "load_state_dict", "load_pretrained_state_dict", "load_resume_state_dict",
+    "accuracy", "load_class_label", "load_state_dict", "load_pretrained_state_dict", "load_resume_state_dict",
     "make_directory", "make_divisible", "save_checkpoint", "Summary", "AverageMeter", "ProgressMeter"
 ]
 
@@ -40,6 +41,13 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             results.append(correct_k.mul_(100.0 / batch_size))
         return results
+
+
+def load_class_label(class_label_file: str, num_classes: int) -> list:
+    class_label = json.load(open(class_label_file))
+    class_label_list = [class_label[str(i)] for i in range(num_classes)]
+
+    return class_label_list
 
 
 def load_state_dict(

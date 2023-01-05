@@ -132,7 +132,7 @@ def main() -> None:
 
     # Initialize the model
     vgg_model = build_model(device=device)
-    vgg_model, _, _, _, _, _ = load_pretrained_state_dict(vgg_model, test_config.model_weights_path)
+    vgg_model = load_pretrained_state_dict(vgg_model, test_config.model_weights_path)
 
     # Start the verification mode of the model.
     vgg_model.eval()
