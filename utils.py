@@ -11,15 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import os
+import shutil
 from enum import Enum
+from typing import Optional
 
 import torch
-from torch import nn
-import shutil
-import os
+from torch import nn, optim
 
 __all__ = [
-    "accuracy", "load_state_dict", "make_directory", "save_checkpoint", "Summary", "AverageMeter", "ProgressMeter"
+    "accuracy", "load_state_dict", "load_pretrained_state_dict", "load_resume_state_dict",
+    "make_directory", "make_divisible", "save_checkpoint", "Summary", "AverageMeter", "ProgressMeter"
 ]
 
 
@@ -42,45 +44,49 @@ def accuracy(output, target, topk=(1,)):
 
 def load_state_dict(
         model: nn.Module,
+        state_dict: dict,
+) -> nn.Module:
+    model_state_dict = model.state_dict()
+
+    # Traverse the model parameters and load the parameters in the pre-trained model into the current model
+    new_state_dict = {k: v for k, v in state_dict.items() if
+                      k in model_state_dict.keys() and v.size() == model_state_dict[k].size()}
+
+    # update model parameters
+    model_state_dict.update(new_state_dict)
+    model.load_state_dict(model_state_dict)
+
+    return model
+
+
+def load_pretrained_state_dict(
+        model: nn.Module,
         model_weights_path: str,
-        ema_model: nn.Module = None,
-        start_epoch: int = None,
-        best_acc1: float = None,
-        optimizer: torch.optim.Optimizer = None,
-        scheduler: torch.optim.lr_scheduler = None,
-        load_mode: str = None,
-) -> [nn.Module, nn.Module, str, int, float, torch.optim.Optimizer, torch.optim.lr_scheduler]:
+) -> nn.Module:
+    checkpoint = torch.load(model_weights_path, map_location=lambda storage, loc: storage)
+    model = load_state_dict(model, checkpoint["state_dict"])
+
+    return model
+
+
+def load_resume_state_dict(
+        model: nn.Module,
+        model_weights_path: str,
+        ema_model: nn.Module or None,
+        optimizer: optim.Optimizer,
+        scheduler: optim.lr_scheduler,
+) -> tuple[nn.Module, nn.Module, int, float, optim.Optimizer, optim.lr_scheduler]:
     # Load model weights
     checkpoint = torch.load(model_weights_path, map_location=lambda storage, loc: storage)
 
-    if load_mode == "resume":
-        # Restore the parameters in the training node to this point
-        start_epoch = checkpoint["epoch"]
-        best_acc1 = checkpoint["best_acc1"]
-        # Load model state dict. Extract the fitted model weights
-        model_state_dict = model.state_dict()
-        state_dict = {k: v for k, v in checkpoint["state_dict"].items() if k in model_state_dict.keys()}
-        # Overwrite the model weights to the current model (base model)
-        model_state_dict.update(state_dict)
-        model.load_state_dict(model_state_dict)
-        # Load ema model state dict. Extract the fitted model weights
-        ema_model_state_dict = ema_model.state_dict()
-        ema_state_dict = {k: v for k, v in checkpoint["ema_state_dict"].items() if k in ema_model_state_dict.keys()}
-        # Overwrite the model weights to the current model (ema model)
-        ema_model_state_dict.update(ema_state_dict)
-        ema_model.load_state_dict(ema_model_state_dict)
-        # Load the optimizer model
-        optimizer.load_state_dict(checkpoint["optimizer"])
-        # Load the scheduler model
-        scheduler.load_state_dict(checkpoint["scheduler"])
-    else:
-        # Load model state dict. Extract the fitted model weights
-        model_state_dict = model.state_dict()
-        state_dict = {k: v for k, v in checkpoint["state_dict"].items() if
-                      k in model_state_dict.keys() and v.size() == model_state_dict[k].size()}
-        # Overwrite the model weights to the current model
-        model_state_dict.update(state_dict)
-        model.load_state_dict(model_state_dict)
+    # 加载训练节点参数
+    start_epoch = checkpoint["epoch"]
+    best_acc1 = checkpoint["best_acc1"]
+
+    model = load_state_dict(model, checkpoint["state_dict"])
+    ema_model = load_state_dict(ema_model, checkpoint["ema_state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
+    scheduler.load_state_dict(checkpoint["scheduler"])
 
     return model, ema_model, start_epoch, best_acc1, optimizer, scheduler
 
@@ -90,11 +96,24 @@ def make_directory(dir_path: str) -> None:
         os.makedirs(dir_path)
 
 
+def make_divisible(v: float, divisor: int, min_value: Optional[int] = None) -> int:
+    if min_value is None:
+        min_value = divisor
+    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+
+    if new_v < 0.9 * v:
+        new_v += divisor
+
+    return new_v
+
+
 def save_checkpoint(
         state_dict: dict,
         file_name: str,
         samples_dir: str,
         results_dir: str,
+        best_file_name: str,
+        last_file_name: str,
         is_best: bool = False,
         is_last: bool = False,
 ) -> None:
@@ -102,9 +121,9 @@ def save_checkpoint(
     torch.save(state_dict, checkpoint_path)
 
     if is_best:
-        shutil.copyfile(checkpoint_path, os.path.join(results_dir, "best.pth.tar"))
+        shutil.copyfile(checkpoint_path, os.path.join(results_dir, best_file_name))
     if is_last:
-        shutil.copyfile(checkpoint_path, os.path.join(results_dir, "last.pth.tar"))
+        shutil.copyfile(checkpoint_path, os.path.join(results_dir, last_file_name))
 
 
 class Summary(Enum):

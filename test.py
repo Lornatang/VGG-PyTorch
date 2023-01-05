@@ -11,73 +11,78 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import os
 import time
 
-import config
-import model
 import torch
-from dataset import CUDAPrefetcher, ImageDataset
 from torch import nn
 from torch.utils.data import DataLoader
-from utils import load_state_dict, accuracy, Summary, AverageMeter, ProgressMeter
 
-model_names = sorted(
-    name for name in model.__dict__ if name.islower() and not name.startswith("__") and callable(model.__dict__[name]))
+import model
+import test_config
+from dataset import CUDAPrefetcher, ImageDataset
+from utils import load_pretrained_state_dict, accuracy, Summary, AverageMeter, ProgressMeter
 
 
-def build_model() -> nn.Module:
-    vgg_model = model.__dict__[config.model_arch_name](num_classes=config.model_num_classes)
-    vgg_model = vgg_model.to(device=config.device, memory_format=torch.channels_last)
+def build_model(
+        model_arch_name: str = test_config.model_arch_name,
+        num_classes: int = test_config.model_num_classes,
+        device: torch.device = torch.device("cpu"),
+) -> nn.Module:
+    vgg_model = model.__dict__[model_arch_name](num_classes=num_classes)
+    vgg_model = vgg_model.to(device)
 
     return vgg_model
 
 
-def load_dataset() -> CUDAPrefetcher:
-    test_dataset = ImageDataset(config.test_image_dir, config.image_size, "Test")
+def load_dataset(
+        test_image_dir: str = test_config.test_image_dir,
+        resized_image_size=test_config.resized_image_size,
+        crop_image_size=test_config.crop_image_size,
+        dataset_mean_normalize=test_config.dataset_mean_normalize,
+        dataset_std_normalize=test_config.dataset_std_normalize,
+        device: torch.device = torch.device("cpu"),
+) -> CUDAPrefetcher:
+    test_dataset = ImageDataset(test_image_dir,
+                                resized_image_size,
+                                crop_image_size,
+                                dataset_mean_normalize,
+                                dataset_std_normalize,
+                                "Test")
     test_dataloader = DataLoader(test_dataset,
-                                 batch_size=config.batch_size,
+                                 batch_size=test_config.batch_size,
                                  shuffle=False,
-                                 num_workers=config.num_workers,
+                                 num_workers=test_config.num_workers,
                                  pin_memory=True,
                                  drop_last=False,
                                  persistent_workers=True)
 
     # Place all data on the preprocessing data loader
-    test_prefetcher = CUDAPrefetcher(test_dataloader, config.device)
+    test_prefetcher = CUDAPrefetcher(test_dataloader, device)
 
     return test_prefetcher
 
 
-def main() -> None:
-    # Initialize the model
-    vgg_model = build_model()
-    print(f"Build {config.model_arch_name.upper()} model successfully.")
-
-    # Load model weights
-    vgg_model, _, _, _, _, _ = load_state_dict(vgg_model, config.model_weights_path)
-    print(f"Load {config.model_arch_name.upper()} model "
-          f"weights `{os.path.abspath(config.model_weights_path)}` successfully.")
-
-    # Start the verification mode of the model.
-    vgg_model.eval()
-
-    # Load test dataloader
-    test_prefetcher = load_dataset()
-
+def test(
+        model: nn.Module,
+        data_prefetcher: CUDAPrefetcher,
+        device: torch.device,
+) -> float:
     # Calculate how many batches of data are in each Epoch
-    batches = len(test_prefetcher)
+    batches = len(data_prefetcher)
     batch_time = AverageMeter("Time", ":6.3f", Summary.NONE)
     acc1 = AverageMeter("Acc@1", ":6.2f", Summary.AVERAGE)
     acc5 = AverageMeter("Acc@5", ":6.2f", Summary.AVERAGE)
     progress = ProgressMeter(batches, [batch_time, acc1, acc5], prefix=f"Test: ")
 
+    # Put the exponential moving average model in the verification mode
+    model.eval()
+
     # Initialize the number of data batches to print logs on the terminal
     batch_index = 0
 
     # Initialize the data loader and load the first batch of data
-    test_prefetcher.reset()
-    batch_data = test_prefetcher.next()
+    data_prefetcher.reset()
+    batch_data = data_prefetcher.next()
 
     # Get the initialization test time
     end = time.time()
@@ -85,14 +90,14 @@ def main() -> None:
     with torch.no_grad():
         while batch_data is not None:
             # Transfer in-memory data to CUDA devices to speed up training
-            images = batch_data["image"].to(device=config.device, non_blocking=True)
-            target = batch_data["target"].to(device=config.device, non_blocking=True)
+            images = batch_data["image"].to(device, non_blocking=True)
+            target = batch_data["target"].to(device, non_blocking=True)
 
             # Get batch size
             batch_size = images.size(0)
 
             # Inference
-            output = vgg_model(images)
+            output = model(images)
 
             # measure accuracy and record loss
             top1, top5 = accuracy(output, target, topk=(1, 5))
@@ -104,17 +109,35 @@ def main() -> None:
             end = time.time()
 
             # Write the data during training to the training log file
-            if batch_index % config.test_print_frequency == 0:
-                progress.display(batch_index + 1)
+            if batch_index % test_config.test_print_frequency == 0:
+                progress.display(batch_index)
 
             # Preload the next batch of data
-            batch_data = test_prefetcher.next()
+            batch_data = data_prefetcher.next()
 
-            # Add 1 to the number of data batches to ensure that the terminal prints data normally
+            # After training a batch of data, add 1 to the number of data batches to ensure that the terminal prints data normally
             batch_index += 1
 
     # print metrics
     progress.display_summary()
+
+    return acc1.avg
+
+
+def main() -> None:
+    device = torch.device(test_config.device)
+
+    # Load test dataloader
+    test_prefetcher = load_dataset()
+
+    # Initialize the model
+    vgg_model = build_model(device=device)
+    vgg_model, _, _, _, _, _ = load_pretrained_state_dict(vgg_model, test_config.model_weights_path)
+
+    # Start the verification mode of the model.
+    vgg_model.eval()
+
+    test(vgg_model, test_prefetcher, device)
 
 
 if __name__ == "__main__":

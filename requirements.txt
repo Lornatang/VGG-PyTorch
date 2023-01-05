@@ -1,5 +1,6 @@
-Pillow>=9.1.1
-torch>=1.12.1+cu116
-numpy>=1.23.1
+Pillow>=9.3.0
+torch>=1.13.0
+typing>=3.7.4.3
+numpy>=1.23.5
 opencv-python>=4.6.0.66
-torchvision>=0.13.1+cu116
+torchvision>=0.14.0
