@@ -1,6 +1,5 @@
 Pillow
 torch
-typing
 numpy
 opencv-python
 torchvision
